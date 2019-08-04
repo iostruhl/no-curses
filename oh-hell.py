@@ -60,18 +60,19 @@ class Client(ConnectionListener):
 
     def Network_update(self, data):
         b = data['boardstate']
-        if b['id'] != b[players][self.name]['id']:
+        if b['next_to_act'] != b[players][self.name]['id']:
             # player is not the actor; just update screen
-            self.gb.draw_screen(b)
+            self.gb.draw_screen(b, self.name)
             return
 
-        assert b['id'] == b[players][self.name]['id']
+        # player must be actor, should either bid or play
+        assert b['next_to_act'] == b[players][self.name]['id']
 
         if b['activity'] == 'bid':
-            bid = self.gb.get_bid(b)
+            bid = self.gb.get_bid(b, self.name)
             connection.send({'action': 'bid', 'bid': bid})
         else:
-            play = self.gb.get_play(b)
+            play = self.gb.get_play(b, self.name)
             connection.send({'action': 'play', 'play', play.to_array()})
 
     def Network_end_game(self, data):

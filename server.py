@@ -320,10 +320,10 @@ class OHServer(Server):
         clean_boardstate = deepcopy(self.boardstate)
         for player_name in clean_boardstate['players']:
             if name != player_name:
-                clean_boardstate['players'][name]['cards_in_hand'] = [[
-                    "x", "x"
-                ] for _ in range(
-                    len(self.boardstate['players'][name]['cards_in_hand']))]
+                clean_boardstate['players'][name]['cards_in_hand'] = [
+                    Card() for _ in range(len(
+                    self.boardstate['players'][name]['cards_in_hand']))
+                ]
         return clean_boardstate
 
 
