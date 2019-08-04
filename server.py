@@ -189,7 +189,12 @@ class OHServer(Server):
 
         if self.shouldBid():
             self.boardstate['activity'] = "bid"
-            self.send_all({'action': "update", 'boardstate': self.boardstate})
+            for name in self.boardstate['players']:
+                self.send_one(
+                    name, {
+                        'action': "update",
+                        'boardstate': self.hide_non_player_hands(name=name)
+                    })
             self.waiting_for_user = True
         elif self.shouldPlay():
             self.boardstate['activity'] = "play"
@@ -299,9 +304,10 @@ class OHServer(Server):
         scores = [[name, self.boardstate['players'][name]['score']]
                   for name in self.boardstate['players']]
         self.send_all({
-            'action' : "end_game",
-            'winner' : winner,
-            'scores' : scores
+            'action'     : "end_game",
+            'boardstate' : self.boardstate,
+            'winner'     : winner,
+            'scores'     : scores
         })
         if not self.untracked:
             sheets_logging.log_game(scores)

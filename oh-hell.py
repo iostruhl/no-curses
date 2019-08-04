@@ -50,13 +50,34 @@ class Client(ConnectionListener):
     def Network_names(self, data):
         print("*** users:", ', '.join([p for p in data['names']]), "***")
 
+        # game is about to start; start up graphics
+        if len(data['names'] == 4):
+            self.gb = GraphicsBoard()
+
     def Network_pause(self, data):
         print("*** USER HAS DISCONNECTED, FATAL ***")
         exit(1)
 
     def Network_update(self, data):
+        b = data['boardstate']
+        if b['id'] != b[players][self.name]['id']:
+            # player is not the actor; just update screen
+            self.gb.draw_screen(b)
+            return
+
+        assert b['id'] == b[players][self.name]['id']
+
+        if b['activity'] == 'bid':
+            bid = self.gb.get_bid(b)
+            connection.send({'action': 'bid', 'bid': bid})
+        else:
+            play = self.gb.get_play(b)
+            connection.send({'action': 'play', 'play', play.to_array()})
 
     def Network_end_game(self, data):
+        b = data['boardstate']
+        w = data['winner']
+        self.gb.end_game(b, w)
 
 if __name__ == "__main__":
     if len(sys.argv) not in [3,4]:
