@@ -66,13 +66,13 @@ class OHServer(Server):
 
         # Public (with hand display caveat)
         self.boardstate = {
-            'activity': "bid",
-            'next_to_act': 0,
-            'hand_num': 1,
-            'trump_card': None,
-            'led_card': None,
-            'players': dict(),
-            'score_history': dict()
+            'activity'      : "bid",
+            'next_to_act'   : 0,
+            'hand_num'      : 1,
+            'trump_card'    : None,
+            'led_card'      : None,
+            'players'       : dict(),
+            'score_history' : dict()
         }
 
         print("Server launched")
@@ -112,12 +112,12 @@ class OHServer(Server):
         })
         if name not in self.boardstate['players']:
             self.boardstate['players'][name] = {
-                'id': None,
-                'bid': None,
-                'score': 0,
-                'cards_in_hand': [],
-                'card_in_play': None,
-                'tricks_taken': 0
+                'id'            : None,
+                'bid'           : None,
+                'score'         : 0,
+                'cards_in_hand' : [],
+                'card_in_play'  : None,
+                'tricks_taken'  : 0
             }
 
     def Launch(self):
@@ -299,9 +299,9 @@ class OHServer(Server):
         scores = [[name, self.boardstate['players'][name]['score']]
                   for name in self.boardstate['players']]
         self.send_all({
-            'action': "broadcast_end_game",
-            'winner': winner,
-            'scores': scores
+            'action' : "end_game",
+            'winner' : winner,
+            'scores' : scores
         })
         if not self.untracked:
             sheets_logging.log_game(scores)
