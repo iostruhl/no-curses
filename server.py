@@ -1,10 +1,10 @@
 from PodSixNet.Server import Server
 from PodSixNet.Channel import Channel
 from fuzzywuzzy import process
-from server_util import sheets_logging
+from util import sheets_logging
 from time import sleep
 from random import shuffle
-import server_util.card_helpers as card_helpers
+import util.card as card
 from copy import deepcopy
 import sys
 
@@ -241,7 +241,7 @@ class OHServer(Server):
     def finish_trick(self):
         winner_name = max(
             self.boardstate['players'],
-            key=lambda name: card_helpers.trick_value(
+            key=lambda name: card.trick_value(
                 card=self.boardstate['players'][name]['card_in_play'],
                 trump_card=self.boardstate['trump_card'],
                 led_card=self.boardstate['led_card']))
