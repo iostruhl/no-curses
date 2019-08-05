@@ -58,6 +58,7 @@ class OHServer(Server):
         self.channels = []
         self.initialize_new_game = True
         self.ids_to_names = dict()
+        self.ordered_names = []
 
         # In game specific
         self.waiting_for_user = False
@@ -112,13 +113,20 @@ class OHServer(Server):
         })
         if name not in self.boardstate['players']:
             self.boardstate['players'][name] = {
+                'display_name'  : self.display_name(name),
                 'id'            : None,
                 'bid'           : None,
                 'score'         : 0,
                 'cards_in_hand' : [],
                 'card_in_play'  : None,
                 'tricks_taken'  : 0
+                'dealer'        : False
             }
+
+    def display_name(self, name):
+        if name.split(' ')[0].lower == "alex":
+            return name.split(' ')[1]
+        return name.split(' ')[0]
 
     def Launch(self):
         while True:
@@ -136,12 +144,13 @@ class OHServer(Server):
         if self.initialize_new_game:
             # Set the ids of the players to {0..3}
             # Indicating their position at the start.
-            ordered_names = [
+            self.ordered_names = [
                 player.name for player in self.boardstate['players']
             ]
-            shuffle(ordered_names)
+            shuffle(self.ordered_names)
             for name in self.boardstate['players']:
-                self.boardstate['players'][name]['id'] = ordered_names.index[name] # yapf: disable
+                self.boardstate['players'][name]['id'] = self.ordered_names.index[name]
+            self.boardstate['players'][self.ordered_names[3]]['dealer'] = True
 
             # This initialization should happen only once.
             self.initialize_new_game = False
@@ -269,6 +278,7 @@ class OHServer(Server):
                 return
 
         # Update player states
+        self.boardstate['score_history'][self.boardstate['hand_num']] = dict()
         for name in self.boardstate['players']:
             # Update score
             tricks_taken = self.boardstate['players'][name]['tricks_taken']
@@ -283,12 +293,13 @@ class OHServer(Server):
             # Reset the bid and tricks taken. Cards in hand and in play should already be correctly empty.
             self.boardstate['players'][name]['bid'] = None
             self.boardstate['players'][name]['tricks_taken'] = 0
+            self.boardstate['players'][name]['dealer'] = False
             # Update the score history with the players and scores.
-            self.boardstate['score_history'][self.boardstate['hand_num']] = {
-                name: self.boardstate['players'][name]['score']
-            }
+            self.boardstate['score_history'][self.boardstate['hand_num']][name] = \
+                self.boardstate['players'][name]['score']
 
         # Reset or update relevant boardstate values.
+        self.boardstate['players'][self.next_to_bid_first]['dealer'] = True
         self.next_to_bid_first = (self.next_to_bid_first + 1) % 4
         self.boardstate['next_to_act'] = self.next_to_bid_first
         self.boardstate['activity'] = "bid"
