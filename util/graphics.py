@@ -4,9 +4,6 @@ from card import Card
 
 class GraphicsBoard:
     sizes = {
-        'padding'                   : 1,
-        'vertical_spacing'          : 1,
-        'horizontal_spacing'        : 5,
         'card_height'               : 11,
         'card_width'                : 13,
         'player_info_window_height' : 6,
@@ -19,10 +16,28 @@ class GraphicsBoard:
         'score_chart_width '        : 68
     }
 
-    x_offsets = {
+    y_offsets = {
+        'hand'               : [[45, 45, 45, 45, 45, 45, 45, 45, 45, 45, 45, 45, 45],
+                                [16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28],
+                                [01, 01, 01, 01, 01, 01, 01, 01, 01, 01, 01, 01, 01],
+                                [16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28]],
+        'in_play'            :  [28, 22, 16, 22],
+        'trump'              :   1,
+        'player_info_window' :  [37, 23, 10, 23],
+        'game_info_window'   :   01,
+        'score_chart'        :   01,
     }
 
-    y_offsets = {
+    x_offsets = {
+        'hand'               : [[15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75],
+                                [01, 01, 01, 01, 01, 01, 01, 01, 01, 01, 01, 01, 01],
+                                [15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75],
+                                [89, 89, 89, 89, 89, 89, 89, 89, 89, 89, 89, 89, 89]],
+        'in_play'            :  [45, 30, 45, 60],
+        'trump'              :   1,
+        'player_info_window' :  [44, 15, 44, 73],
+        'game_info_window'   :   89,
+        'score_chart'        :   112
     }
 
     def __init__(self):
@@ -39,11 +54,13 @@ class GraphicsBoard:
         curses.init_pair(5, curses.COLOR_CYAN, curses.COLOR_BLACK)
         curses.init_pair(6, curses.COLOR_YELLOW, curses.COLOR_BLACK)
 
-        self.clean_board()
+        self.erase_board()
 
         # offsets to center UI
-        self.cols_offset = (curses.COLS - 181) // 2
-        self.rows_offset = (curses.LINES - 58) // 2
+        self.cols_offset = 0
+        self.rows_offset = 0
+        # self.cols_offset = (curses.COLS - 181) // 2
+        # self.rows_offset = (curses.LINES - 58) // 2
 
     def __del__(self):
         # shut down curses
@@ -51,7 +68,7 @@ class GraphicsBoard:
         curses.echo()
         curses.endwin()
 
-    def clean_board(self):
+    def erase_board(self):
         # all windows and panels for curses
         self.windows = {
                 hand_windows        : [[]   for _ in range(4)],
@@ -74,12 +91,18 @@ class GraphicsBoard:
         players       = boardstate['players']
         score_history = boardstate['score_history']
 
+        self.erase_board()
+
         self.draw_hands(players, name)
         self.draw_in_play(players, name)
         self.draw_trump(trump)
         self.draw_player_info(players, name, next_to_act, activity)
         self.draw_game_info(players, hand_num, activity)
         self.draw_score_chart(score_history)
+
+    def get_bid(self, boardstate, name):
+
+    def get_play(self, boardstate, name):
 
     def draw_hands(self, players, name):
         for player in players.values():
