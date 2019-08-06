@@ -51,7 +51,8 @@ class Client(ConnectionListener):
         print("*** users:", ', '.join([p for p in data['names']]), "***")
 
         # game is about to start; start up graphics
-        if len(data['names'] == 4):
+        if len(data['names']) == 4:
+            print("Starting up curses")
             self.gb = GraphicsBoard()
 
     def Network_pause(self, data):
@@ -60,9 +61,17 @@ class Client(ConnectionListener):
 
     def Network_update(self, data):
         b = data['boardstate']
+
+        # Reformat cards as Card objects
+        b['trump_card'] = Card(b['trump_card'][0], b['trump_card'][1])
+        b['led_card'] = Card(b['led_card'][0], b['led_card'][1])
+        for player in b['players']:
+            b[player]['cards_in_hand'] = [Card(card[0], card[1])
+                for card in b[player]['cards_in_hand']]
+
         if b['next_to_act'] != b[players][self.name]['id']:
             # player is not the actor; just update screen
-            self.gb.draw_screen(b, self.name)
+            self.gb.draw_board(b, self.name)
             return
 
         # player must be actor, should either bid or play
@@ -73,7 +82,8 @@ class Client(ConnectionListener):
             connection.send({'action': 'bid', 'bid': bid})
         else:
             play = self.gb.get_play(b, self.name)
-            connection.send({'action': 'play', 'play': play.to_array()})
+            played_card = b['players'][self.name][play]
+            connection.send({'action': 'play', 'play': played_card.to_array()})
 
     def Network_end_game(self, data):
         b = data['boardstate']

@@ -81,7 +81,6 @@ class OHServer(Server):
     def Connected(self, channel, addr):
         if len(self.channels) < 4:
             print("New channel", str(addr))
-            self.channels.append(channel)
 
     def remove_channel(self, channel):
         self.ready_count -= 1
@@ -145,11 +144,11 @@ class OHServer(Server):
             # Set the ids of the players to {0..3}
             # Indicating their position at the start.
             self.ordered_names = [
-                player.name for player in self.boardstate['players']
+                player for player in self.boardstate['players']
             ]
             shuffle(self.ordered_names)
             for name in self.boardstate['players']:
-                self.boardstate['players'][name]['id'] = self.ordered_names.index[name]
+                self.boardstate['players'][name]['id'] = self.ordered_names.index(name)
             self.boardstate['players'][self.ordered_names[3]]['dealer'] = True
 
             # This initialization should happen only once.
@@ -187,16 +186,19 @@ class OHServer(Server):
             return
 
         if self.should_deal_hand:
+            print('dealing')
+            deck = card.Deck()
             deck.shuffle()
             for name in self.boardstate['players']:
-                self.boardstate['players'][name].cards_in_hand = [
-                    deck.next() for _ in range(self.boardstate['hand_num'])
+                self.boardstate['players'][name]['cards_in_hand'] = [
+                    deck.next().to_array() for _ in range(self.boardstate['hand_num'])
                 ]
             # Set the trump card if there are still cards remaining in the deck.
-            self.boardstate['trump_card'] = deck.next()
+            self.boardstate['trump_card'] = deck.next().to_array()
             self.should_deal_hand = False
 
         if self.shouldBid():
+            print('bidding')
             self.boardstate['activity'] = "bid"
             for name in self.boardstate['players']:
                 self.send_one(
@@ -206,6 +208,7 @@ class OHServer(Server):
                     })
             self.waiting_for_user = True
         elif self.shouldPlay():
+            print('playing')
             self.boardstate['activity'] = "play"
             for name in self.boardstate['players']:
                 self.send_one(
@@ -215,6 +218,7 @@ class OHServer(Server):
                     })
             self.waiting_for_user = True
         else:
+            print('finishing')
             self.finish_trick()
             self.maybe_finish_hand()
             self.maybe_finish_game()
@@ -331,8 +335,8 @@ class OHServer(Server):
         clean_boardstate = deepcopy(self.boardstate)
         for player_name in clean_boardstate['players']:
             if name != player_name:
-                clean_boardstate['players'][name]['cards_in_hand'] = [
-                    Card() for _ in range(len(
+                clean_boardstate['players'][player_name]['cards_in_hand'] = [
+                    card.Card().to_array() for _ in range(len(
                     self.boardstate['players'][name]['cards_in_hand']))
                 ]
         return clean_boardstate

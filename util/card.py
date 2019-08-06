@@ -45,7 +45,7 @@ class Card:
 
     # Prints the visual representation of the card, for curses graphics
     def to_ascii(self) -> str:
-        return ascii_representation(self.rank, suit_ascii[self.suit][0], self.visible)
+        return ascii_representation(self.rank, self.suit_ascii[self.suit][0], self.visible)
 
     def is_playable(self, hand, led_card):
         # leading?
@@ -70,15 +70,18 @@ class Card:
     # Needed for hand sorting (i.e. organization)
     def __lt__(self, other):
         if isinstance(other, Card):
-            if suit_ascii[self.suit][1] == suit_ascii[other.suit][1]:
+            if self.suit_ascii[self.suit][1] == self.suit_ascii[other.suit][1]:
                 return self.value > other.value
             else:
-                return suit_ascii[self.suit][1] > suit_ascii[other.suit][1]
+                return self.suit_ascii[self.suit][1] > self.suit_ascii[other.suit][1]
         return NotImplemented
 
     # Makes printing cards nice (for debugging)
     def __repr__(self):
-        return "{:s}{:s}".format(self.rank, suit_ascii[self.suit][0])
+        if self.rank and self.suit:
+            return "{:s}{:s}".format(self.rank, self.suit_ascii[self.suit][0])
+        else:
+            return "xx"
 
 
 class Deck:
