@@ -43,6 +43,24 @@ class Card:
     def to_array(self) -> list:
         return [self.rank, self.suit]
 
+    # Prints the visual representation of the card, for curses graphics
+    def to_ascii(self) -> str:
+        return ascii_representation(self.rank, suit_ascii[self.suit][0], self.visible)
+
+    def is_playable(self, hand, led_card):
+        # leading?
+        if not led_card:
+            return True
+        # following suit?
+        if self.suit == led_card.suit:
+            return True
+        # capable of follwing suit?
+        for card in hand:
+            if card.suit == led_card.suit:
+                return False
+
+        return True:
+
     # ABSOLUTELY NEED THIS FOR LIST MEMBERSHIP
     def __eq__(self, other):
         if isinstance(other, Card):
@@ -62,9 +80,6 @@ class Card:
     def __repr__(self):
         return "{:s}{:s}".format(self.rank, suit_ascii[self.suit][0])
 
-    # Prints the visual representation of the card, for curses graphics
-    def to_ascii(self) -> str:
-        return ascii_representation(self.rank, suit_ascii[self.suit][0], self.visible)
 
 class Deck:
     ranks = Card.rank_value.keys();
