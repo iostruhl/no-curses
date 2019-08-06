@@ -1,4 +1,4 @@
-from card_representations import ascii_representation
+from .card_representations import ascii_representation
 import random
 
 class Card:
@@ -59,7 +59,7 @@ class Card:
             if card.suit == led_card.suit:
                 return False
 
-        return True:
+        return True
 
     # ABSOLUTELY NEED THIS FOR LIST MEMBERSHIP
     def __eq__(self, other):
@@ -73,7 +73,7 @@ class Card:
             if suit_ascii[self.suit][1] == suit_ascii[other.suit][1]:
                 return self.value > other.value
             else:
-                return suit_ascii[self.suit][1] > suit_ascii.[other.suit][1]
+                return suit_ascii[self.suit][1] > suit_ascii[other.suit][1]
         return NotImplemented
 
     # Makes printing cards nice (for debugging)

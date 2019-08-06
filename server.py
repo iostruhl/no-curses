@@ -14,7 +14,7 @@ class ClientChannel(Channel):
         Channel.__init__(self, *args, **kwargs)
 
     def Close(self):
-        self._server.remove_player(self)
+        self._server.remove_channel(self)
 
     ##################################
     ### Network specific callbacks ###
@@ -57,7 +57,7 @@ class OHServer(Server):
         self.untracked = untracked
         self.channels = []
         self.initialize_new_game = True
-        self.ids_to_names = dict()
+        self.ready_count = 0
         self.ordered_names = []
 
         # In game specific
@@ -85,7 +85,7 @@ class OHServer(Server):
 
     def remove_channel(self, channel):
         self.ready_count -= 1
-        print("Remove Player" + str(channel.name))
+        print("Remove Player " + str(channel.name))
         self.channels.remove(channel)
         if not self.initialize_new_game:
             self.send_pause()
@@ -119,7 +119,7 @@ class OHServer(Server):
                 'score'         : 0,
                 'cards_in_hand' : [],
                 'card_in_play'  : None,
-                'tricks_taken'  : 0
+                'tricks_taken'  : 0,
                 'dealer'        : False
             }
 

@@ -73,7 +73,7 @@ class Client(ConnectionListener):
             connection.send({'action': 'bid', 'bid': bid})
         else:
             play = self.gb.get_play(b, self.name)
-            connection.send({'action': 'play', 'play', play.to_array()})
+            connection.send({'action': 'play', 'play': play.to_array()})
 
     def Network_end_game(self, data):
         b = data['boardstate']
