@@ -51,9 +51,8 @@ class Client(ConnectionListener):
         print("*** users:", ', '.join([p for p in data['names']]), "***")
 
         # game is about to start; start up graphics
-        if len(data['names']) == 4:
-            print("Starting up curses")
-            self.gb = GraphicsBoard()
+        # if len(data['names']) == 4:
+            # self.gb = GraphicsBoard()
 
     def Network_pause(self, data):
         print("*** USER HAS DISCONNECTED, FATAL ***")

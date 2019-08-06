@@ -130,7 +130,7 @@ class OHServer(Server):
     def Launch(self):
         while True:
             self.Pump()
-            sleep(0.01)
+            sleep(0.0001)
 
     # --- Game Logic ---
     def handle_ready(self):
