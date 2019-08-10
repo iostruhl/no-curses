@@ -128,8 +128,8 @@ rank_representation['H'] = ("┌─────────┐\n"
                             "└─────────┘")
 
 
-def ascii_representation(rank: str, suit: str, visibile: bool):
-    if not visibile:
-        return rank_representation['H']
-    else:
-        return rank_representation[rank].replace("x", suit)
+def ascii_representation(rank: str, suit: str):
+    return rank_representation[rank].replace("x", suit)
+
+def hidden_ascii_representation():
+    return rank_representation['H']

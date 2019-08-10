@@ -1,6 +1,7 @@
 import curses
 from curses import panel
 from .card import Card
+import traceback
 
 
 class GraphicsBoard:
@@ -14,7 +15,7 @@ class GraphicsBoard:
         'game_info_window_height': 5,
         'game_info_window_width': 20,
         'score_chart_height': 29,
-        'score_chart_width ': 68
+        'score_chart_width': 68
     }
 
     y_offsets = {
@@ -80,7 +81,6 @@ class GraphicsBoard:
         # shut down curses
         curses.nocbreak()
         curses.echo()
-        # curses.endwin()
 
     def erase_board(self):
         # all windows and panels for curses
@@ -113,7 +113,7 @@ class GraphicsBoard:
         self.draw_trump(trump)
         self.draw_player_info(players, name, next_to_act, activity)
         self.draw_game_info(players, hand_num, activity)
-        self.draw_score_chart(score_history)
+        self.draw_score_chart(players, score_history)
 
     def draw_hands(self, players, name):
         for player in players.values():
@@ -122,9 +122,9 @@ class GraphicsBoard:
 
             # initialize curses windows
             self.windows['hand_windows'][seat] = [
-                curses.newwin(sizes['card_height'], sizes['card_width'],
-                              y_offsets['hand'][seat][i] + self.rows_offset,
-                              x_offsets['hand'][seat][i] + self.cols_offset)
+                curses.newwin(self.sizes['card_height'], self.sizes['card_width'],
+                              self.y_offsets['hand'][seat][i] + self.rows_offset,
+                              self.x_offsets['hand'][seat][i] + self.cols_offset)
                 for i in range(hand_size)
             ]
 
@@ -150,9 +150,9 @@ class GraphicsBoard:
 
             # initialize curses window
             self.windows['in_play_windows'][seat] = curses.newwin(
-                sizes['card_height'], sizes['card_width'],
-                y_offsets['in_play'][seat] + self.rows_offset,
-                x_offsets['in_play'][seat] + self.cols_offset)
+                self.sizes['card_height'], self.sizes['card_width'],
+                self.y_offsets['in_play'][seat] + self.rows_offset,
+                self.x_offsets['in_play'][seat] + self.cols_offset)
 
             # draw card in play
             card = player['card_in_play']
@@ -166,9 +166,9 @@ class GraphicsBoard:
     def draw_trump(self, trump):
         # initialize curses window
         self.windows['trump_window'] = curses.newwin(
-            sizes['card_height'], sizes['card_width'],
-            y_offsets['trump'] + self.rows_offset,
-            x_offsets['trump'] + self.cols_offset)
+            self.sizes['card_height'], self.sizes['card_width'],
+            self.y_offsets['trump'] + self.rows_offset,
+            self.x_offsets['trump'] + self.cols_offset)
 
         # draw trump
         trump_window = self.windows['trump_window']
@@ -180,17 +180,17 @@ class GraphicsBoard:
     def draw_bids(self, hand_num, dealer, bid_total):
         for i in range(hand_num):
             # initialize curses windows
-            self.bid_windows[i] = curses.newwin(
-                sizes['bid_window_height'], sizes['bid_window_width'],
-                y_offsets['bid_window'] + self.rows_offset,
-                x_offsets['bid_window'][i] + self.cols_offset)
+            self.windows['bid_windows'][i] = curses.newwin(
+                self.sizes['bid_window_height'], self.sizes['bid_window_width'],
+                self.y_offsets['bid_window'] + self.rows_offset,
+                self.x_offsets['bid_window'][i] + self.cols_offset)
 
             # draw bid windows
-            bid_window = self.bid_windows[i]
+            bid_window = self.windows['bid_windows'][i]
             bid_window.erase()
 
             # don't draw illegal bid for dealer
-            if delear and ((hand_num - bid_total) == i):
+            if dealer and ((hand_num - bid_total) == i):
                 continue
 
             bid_window.addstr('\n ' + f'{i}')
@@ -205,10 +205,10 @@ class GraphicsBoard:
 
             # initialize curses window
             self.windows['player_info_windows'][seat] = curses.newwin(
-                sizes['player_info_window_height'],
-                sizes['player_info_window_width'],
-                y_offsets['player_info_window'][seat] + self.rows_offset,
-                x_offsets['player_info_window'][seat] + self.cols_offset)
+                self.sizes['player_info_window_height'],
+                self.sizes['player_info_window_width'],
+                self.y_offsets['player_info_window'][seat] + self.rows_offset,
+                self.x_offsets['player_info_window'][seat] + self.cols_offset)
 
             # draw player info
             player_info_window = self.windows['player_info_windows'][seat]
@@ -231,9 +231,9 @@ class GraphicsBoard:
     def draw_game_info(self, players, hand_num, activity):
         # initialize curses window
         self.windows['game_info_window'] = curses.newwin(
-            sizes['game_info_window_height'], sizes['game_info_window_width'],
-            y_offsets['game_info_window'] + self.rows_offset,
-            x_offsets['game_info_window'] + self.cols_offset)
+            self.sizes['game_info_window_height'], self.sizes['game_info_window_width'],
+            self.y_offsets['game_info_window'] + self.rows_offset,
+            self.x_offsets['game_info_window'] + self.cols_offset)
 
         # draw game info
         game_info_window = self.windows['game_info_window']
@@ -265,9 +265,9 @@ class GraphicsBoard:
     def draw_score_chart(self, players, score_history):
         # initialize curses window
         self.windows['score_chart_window'] = curses.newwin(
-            sizes['score_chart_height'], sizes['score_chart_width'],
-            y_offsets['score_chart'] + self.rows_offset,
-            x_offsets['score_chart'] + self.cols_offset)
+            self.sizes['score_chart_height'], self.sizes['score_chart_width'],
+            self.y_offsets['score_chart'] + self.rows_offset,
+            self.x_offsets['score_chart'] + self.cols_offset)
 
         score_chart_window = self.windows['score_chart_window']
         score_rows = max(score_history.keys())
@@ -276,7 +276,7 @@ class GraphicsBoard:
         # draw lines and rows headers
         for i in range(1, score_rows):
             score_chart_window.hline(2 * i, 0, curses.ACS_HLINE,
-                                     sizes['score_chart_width'])
+                                     self.sizes['score_chart_width'])
             score_chart_window.addstr(1 + 2 * i, 1, f'{i}'.rjust(5))
         for i in range(1, 4):
             score_chart_window.vline(0, 7 + 15 * i, curses.ACS_VLINE,
@@ -342,8 +342,8 @@ class GraphicsBoard:
 
         # pick up currently selected card
         self.windows['hand_windows'][0][self.hand_position].mvwin(
-            y_offsets['hand'][0][self.hand_position] - 2 + self.rows_offset,
-            x_offsets['hand'][0][self.hand_position] + self.cols_offset)
+            self.y_offsets['hand'][0][self.hand_position] - 2 + self.rows_offset,
+            self.x_offsets['hand'][0][self.hand_position] + self.cols_offset)
 
         # wait for user to play a card
         while True:
@@ -363,8 +363,8 @@ class GraphicsBoard:
 
         # put down currently selected card
         self.windows['hand_windows'][0][self.hand_position].mvwin(
-            y_offsets['hand'][0][self.hand_position] + self.rows_offset,
-            x_offsets['hand'][0][self.hand_position] + self.cols_offset)
+            self.y_offsets['hand'][0][self.hand_position] + self.rows_offset,
+            self.x_offsets['hand'][0][self.hand_position] + self.cols_offset)
 
         self.hand_position = (self.hand_position + n) % hand_len
 
@@ -377,8 +377,8 @@ class GraphicsBoard:
 
         # pick up currently selected card
         self.windows['hand_windows'][0][self.hand_position].mvwin(
-            y_offsets['hand'][0][self.hand_position] - 2 + self.rows_offset,
-            x_offsets['hand'][0][self.hand_position] + self.cols_offset)
+            self.y_offsets['hand'][0][self.hand_position] - 2 + self.rows_offset,
+            self.x_offsets['hand'][0][self.hand_position] + self.cols_offset)
 
         # maybe redraw hand
 

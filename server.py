@@ -7,7 +7,7 @@ from random import shuffle
 import util.card as card
 from copy import deepcopy
 import sys
-
+from pprint import pprint
 
 class ClientChannel(Channel):
     def __init__(self, *args, **kwargs):
@@ -74,7 +74,7 @@ class OHServer(Server):
             'trump_card': None,
             'led_card': None,
             'players': dict(),
-            'score_history': dict()
+            'score_history': {}
         }
 
         print("Server launched")
@@ -96,7 +96,8 @@ class OHServer(Server):
         self.send_all({'action': "pause"})
 
     def send_all(self, data):
-        print("Server: sending to ALL :", data)
+        print("Server: sending to ALL :", end = "")
+        pprint(data)
         [channel.Send(data) for channel in self.user_channels]
 
     def send_one(self, name, data, echo=True):
@@ -149,10 +150,15 @@ class OHServer(Server):
                 player for player in self.boardstate['players']
             ]
             shuffle(self.ordered_names)
+            self.boardstate['score_history'][0] = dict()
             for name in self.boardstate['players']:
                 self.boardstate['players'][name][
                     'id'] = self.ordered_names.index(name)
+                self.boardstate['score_history'][0][name] = 0
             self.boardstate['players'][self.ordered_names[3]]['dealer'] = True
+
+            # self.boardstate['score_history'][self.boardstate['hand_num']][name] = \
+            #     self.boardstate['players'][name]['score']
 
             # This initialization should happen only once.
             self.initialize_new_game = False

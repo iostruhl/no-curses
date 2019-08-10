@@ -1,4 +1,4 @@
-from .card_representations import ascii_representation
+from .card_representations import ascii_representation, hidden_ascii_representation
 import random
 
 
@@ -30,24 +30,19 @@ class Card:
         self.rank = rank
         self.value = self.rank_value[rank] if rank else None
         self.suit = suit
-        self.visible = False
-
-    def show(self):
-        self.visible = True
-
-    def hide(self):
-        self.visible = False
+        self.visible = (rank is not None and suit is not None)
 
     def color(self) -> int:
-        return self.colors[self.suit][1]
+        return self.suit_ascii[self.suit][1]
 
     def to_array(self) -> list:
         return [self.rank, self.suit]
 
     # Prints the visual representation of the card, for curses graphics
     def to_ascii(self) -> str:
-        return ascii_representation(self.rank, self.suit_ascii[self.suit][0],
-                                    self.visible)
+        if self.visible:
+            return ascii_representation(self.rank, self.suit_ascii[self.suit][0])
+        return hidden_ascii_representation()
 
     def is_playable(self, hand, led_card):
         # leading?
