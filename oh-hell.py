@@ -59,6 +59,7 @@ class Client(ConnectionListener):
         exit(1)
 
     def Network_update(self, data):
+        print("UPDATED!!!")
         b = data['boardstate']
 
         # Reformat cards as Card objects

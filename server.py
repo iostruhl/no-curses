@@ -55,7 +55,7 @@ class OHServer(Server):
         Server.__init__(self, *args, **kwargs)
         # Internal
         self.untracked = untracked
-        self.channels = []
+        self.user_channels = []
         self.initialize_new_game = True
         self.ready_count = 0
         self.ordered_names = []
@@ -79,13 +79,14 @@ class OHServer(Server):
         print("Server launched")
 
     def Connected(self, channel, addr):
-        if len(self.channels) < 4:
+        if len(self.user_channels) < 4:
             print("New channel", str(addr))
+            self.user_channels.append(channel)
 
     def remove_channel(self, channel):
         self.ready_count -= 1
         print("Remove Player " + str(channel.name))
-        self.channels.remove(channel)
+        self.user_channels.remove(channel)
         if not self.initialize_new_game:
             self.send_pause()
 
@@ -95,20 +96,20 @@ class OHServer(Server):
 
     def send_all(self, data):
         print("Server: sending to ALL :", data)
-        [channel.Send(data) for channel in self.channels]
+        [channel.Send(data) for channel in self.user_channels]
 
     def send_one(self, name, data, echo=True):
-        if echo:
-            print("Server: sending to", name, ":", data)
-        for channel in self.channels:
+        for channel in self.user_channels:
             if channel.name == name:
+                if echo:
+                    print("Server: sending to", name, ":", data)
                 channel.Send(data)
 
     def handle_name(self, name):
         self.send_one(name, {'action': "server_name", 'name': name})
         self.send_all({
             'action': "names",
-            'names': [channel.name for channel in self.channels]
+            'names': [channel.name for channel in self.user_channels]
         })
         if name not in self.boardstate['players']:
             self.boardstate['players'][name] = {
@@ -161,6 +162,7 @@ class OHServer(Server):
         # and then executes that action.
         while True:
             self.do_next_action()
+            self.Pump()
 
     def do_next_action(self):
         '''
