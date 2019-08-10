@@ -6,8 +6,9 @@ from util.graphics import GraphicsBoard
 import shutil
 from PodSixNet.Connection import connection, ConnectionListener
 
+
 class Client(ConnectionListener):
-    def __init__(self, host, port, name = "ANON", sort_hand_ascending = False):
+    def __init__(self, host, port, name="ANON", sort_hand_ascending=False):
         self.Connect((host, port))
         print("Oh Hell client started")
         print("Ctrl-C to exit")
@@ -42,17 +43,14 @@ class Client(ConnectionListener):
     def Network_server_name(self, data):
         print("Server set name to", data['name'])
         self.name = data['name']
-        connection.Send({
-                'action': "ready",
-                'name': self.name
-            })
+        connection.Send({'action': "ready", 'name': self.name})
 
     def Network_names(self, data):
         print("*** users:", ', '.join([p for p in data['names']]), "***")
 
         # game is about to start; start up graphics
         # if len(data['names']) == 4:
-            # self.gb = GraphicsBoard()
+        # self.gb = GraphicsBoard()
 
     def Network_pause(self, data):
         print("*** USER HAS DISCONNECTED, FATAL ***")
@@ -66,8 +64,9 @@ class Client(ConnectionListener):
         b['trump_card'] = Card(b['trump_card'][0], b['trump_card'][1])
         b['led_card'] = Card(b['led_card'][0], b['led_card'][1])
         for player in b['players']:
-            b[player]['cards_in_hand'] = [Card(card[0], card[1])
-                for card in b[player]['cards_in_hand']]
+            b[player]['cards_in_hand'] = [
+                Card(card[0], card[1]) for card in b[player]['cards_in_hand']
+            ]
 
         if b['next_to_act'] != b[players][self.name]['id']:
             # player is not the actor; just update screen
@@ -90,8 +89,9 @@ class Client(ConnectionListener):
         w = data['winner']
         self.gb.end_game(b, w)
 
+
 if __name__ == "__main__":
-    if len(sys.argv) not in [3,4]:
+    if len(sys.argv) not in [3, 4]:
         print("Usage:", sys.argv[0], "host:port name [--sort_hand_ascending]")
         print("e.g.", sys.argv[0], "localhost:8080 Isaac")
     else:
@@ -99,8 +99,10 @@ if __name__ == "__main__":
         assert (size.columns >= 181 and size.lines >= 58), \
             "Resize terminal to at least 181x58"
         host, port = sys.argv[1].split(":")
-        c = Client(host, int(port), name = sys.argv[2],
-                   sort_hand_ascending = (len(sys.argv) == 4))
+        c = Client(host,
+                   int(port),
+                   name=sys.argv[2],
+                   sort_hand_ascending=(len(sys.argv) == 4))
         while 1:
             c.Loop()
             sleep(0.001)

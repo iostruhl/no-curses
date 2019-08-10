@@ -1,28 +1,29 @@
 from .card_representations import ascii_representation
 import random
 
+
 class Card:
     rank_value = {
-        "2"  : 2,
-        "3"  : 3,
-        "4"  : 4,
-        "5"  : 5,
-        "6"  : 6,
-        "7"  : 7,
-        "8"  : 8,
-        "9"  : 9,
-        "10" : 10,
-        "J"  : 11,
-        "Q"  : 12,
-        "K"  : 13,
-        "A"  : 14
+        "2": 2,
+        "3": 3,
+        "4": 4,
+        "5": 5,
+        "6": 6,
+        "7": 7,
+        "8": 8,
+        "9": 9,
+        "10": 10,
+        "J": 11,
+        "Q": 12,
+        "K": 13,
+        "A": 14
     }
 
     suit_ascii = {
-        "spades"   : ('♠', 0),
-        "hearts"   : ('♥', 1),
-        "diamonds" : ('♦', 4),
-        "clubs"    : ('♣', 2)
+        "spades": ('♠', 0),
+        "hearts": ('♥', 1),
+        "diamonds": ('♦', 4),
+        "clubs": ('♣', 2)
     }
 
     def __init__(self, rank: str = None, suit: str = None):
@@ -45,7 +46,8 @@ class Card:
 
     # Prints the visual representation of the card, for curses graphics
     def to_ascii(self) -> str:
-        return ascii_representation(self.rank, self.suit_ascii[self.suit][0], self.visible)
+        return ascii_representation(self.rank, self.suit_ascii[self.suit][0],
+                                    self.visible)
 
     def is_playable(self, hand, led_card):
         # leading?
@@ -73,7 +75,8 @@ class Card:
             if self.suit_ascii[self.suit][1] == self.suit_ascii[other.suit][1]:
                 return self.value > other.value
             else:
-                return self.suit_ascii[self.suit][1] > self.suit_ascii[other.suit][1]
+                return self.suit_ascii[self.suit][1] > self.suit_ascii[
+                    other.suit][1]
         return NotImplemented
 
     # Makes printing cards nice (for debugging)
@@ -85,13 +88,14 @@ class Card:
 
 
 class Deck:
-    ranks = Card.rank_value.keys();
-    suits = Card.suit_ascii.keys();
+    ranks = Card.rank_value.keys()
+    suits = Card.suit_ascii.keys()
 
     def __init__(self):
         self.next_index = 0
-        self.deck = [Card(rank, suit) for rank in self.ranks
-                     for suit in self.suits]
+        self.deck = [
+            Card(rank, suit) for rank in self.ranks for suit in self.suits
+        ]
 
     def shuffle(self):
         self.next_index = 0
@@ -104,6 +108,7 @@ class Deck:
         card = self.deck[self.next_index]
         self.next_index += 1
         return card
+
 
 def trick_value(card: list, trump_card: list, led_card: list):
     if trump_card is not None and card[1] == trump_card[1]:

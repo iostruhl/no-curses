@@ -2,44 +2,52 @@ import curses
 from curses import panel
 from .card import Card
 
+
 class GraphicsBoard:
     sizes = {
-        'card_height'               : 11,
-        'card_width'                : 13,
-        'bid_window_height'         : 3,
-        'bid_window_width'          : 4,
-        'player_info_window_height' : 6,
-        'player_info_window_width'  : 13,
-        'game_info_window_height'   : 5,
-        'game_info_window_width'    : 20,
-        'score_chart_height'        : 29,
-        'score_chart_width '        : 68
+        'card_height': 11,
+        'card_width': 13,
+        'bid_window_height': 3,
+        'bid_window_width': 4,
+        'player_info_window_height': 6,
+        'player_info_window_width': 13,
+        'game_info_window_height': 5,
+        'game_info_window_width': 20,
+        'score_chart_height': 29,
+        'score_chart_width ': 68
     }
 
     y_offsets = {
-        'hand'               : [[45, 45, 45, 45, 45, 45, 45, 45, 45, 45, 45, 45, 45],
-                                [16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28],
-                                [ 1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1],
-                                [16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28]],
-        'in_play'            :  [28, 22, 16, 22],
-        'trump'              :    1,
-        'bid_window'         :   54,
-        'player_info_window' :  [37, 23, 10, 23],
-        'game_info_window'   :    1,
-        'score_chart'        :    1
+        'hand': [[45, 45, 45, 45, 45, 45, 45, 45, 45, 45, 45, 45, 45],
+                 [16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28],
+                 [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+                 [16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28]],
+        'in_play': [28, 22, 16, 22],
+        'trump':
+        1,
+        'bid_window':
+        54,
+        'player_info_window': [37, 23, 10, 23],
+        'game_info_window':
+        1,
+        'score_chart':
+        1
     }
 
     x_offsets = {
-        'hand'               : [[15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75],
-                                [ 1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1],
-                                [15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75],
-                                [89, 89, 89, 89, 89, 89, 89, 89, 89, 89, 89, 89, 89]],
-        'in_play'            :  [45, 30, 45, 60],
-        'trump'              :    1,
-        'bid_window'         :  [15, 19, 23, 27, 31, 35, 39, 43, 47, 51, 55, 59, 63, 67],
-        'player_info_window' :  [44, 15, 44, 73],
-        'game_info_window'   :   89,
-        'score_chart'        :  112
+        'hand': [[15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75],
+                 [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+                 [15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75],
+                 [89, 89, 89, 89, 89, 89, 89, 89, 89, 89, 89, 89, 89]],
+        'in_play': [45, 30, 45, 60],
+        'trump':
+        1,
+        'bid_window': [15, 19, 23, 27, 31, 35, 39, 43, 47, 51, 55, 59, 63, 67],
+        'player_info_window': [44, 15, 44, 73],
+        'game_info_window':
+        89,
+        'score_chart':
+        112
     }
 
     def __init__(self):
@@ -59,7 +67,7 @@ class GraphicsBoard:
         self.erase_board()
 
         # graphics navigation state variables
-        self.bid_position  = 0
+        self.bid_position = 0
         self.hand_position = 0
 
         # offsets to center UI
@@ -77,25 +85,25 @@ class GraphicsBoard:
     def erase_board(self):
         # all windows and panels for curses
         self.windows = {
-                'hand_windows'        : [[]   for _ in range(4)],
-                'hand_panels'         : [[]   for _ in range(4)],
-                'in_play_windows'     : [None for _ in range(4)],
-                'trump_window'        :  None,
-                'bid_windows'         : [None for _ in range(14)],
-                'player_info_windows' : [None for _ in range(4)],
-                'game_info_window'    :  None,
-                'score_chart_window'  :  None,
+            'hand_windows': [[] for _ in range(4)],
+            'hand_panels': [[] for _ in range(4)],
+            'in_play_windows': [None for _ in range(4)],
+            'trump_window': None,
+            'bid_windows': [None for _ in range(14)],
+            'player_info_windows': [None for _ in range(4)],
+            'game_info_window': None,
+            'score_chart_window': None,
         }
 
         self.stdscr.erase()
         self.stdscr.refresh()
 
     def draw_board(self, boardstate, name):
-        activity      = boardstate['activity']
-        hand_num      = boardstate['hand_num']
-        next_to_act   = boardstate['next_to_act']
-        trump         = boardstate['trump_card']
-        players       = boardstate['players']
+        activity = boardstate['activity']
+        hand_num = boardstate['hand_num']
+        next_to_act = boardstate['next_to_act']
+        trump = boardstate['trump_card']
+        players = boardstate['players']
         score_history = boardstate['score_history']
 
         self.erase_board()
@@ -144,8 +152,7 @@ class GraphicsBoard:
             self.windows['in_play_windows'][seat] = curses.newwin(
                 sizes['card_height'], sizes['card_width'],
                 y_offsets['in_play'][seat] + self.rows_offset,
-                x_offsets['in_play'][seat] + self.cols_offset
-            )
+                x_offsets['in_play'][seat] + self.cols_offset)
 
             # draw card in play
             card = player['card_in_play']
@@ -161,8 +168,7 @@ class GraphicsBoard:
         self.windows['trump_window'] = curses.newwin(
             sizes['card_height'], sizes['card_width'],
             y_offsets['trump'] + self.rows_offset,
-            x_offsets['trump'] + self.cols_offset
-        )
+            x_offsets['trump'] + self.cols_offset)
 
         # draw trump
         trump_window = self.windows['trump_window']
@@ -177,8 +183,7 @@ class GraphicsBoard:
             self.bid_windows[i] = curses.newwin(
                 sizes['bid_window_height'], sizes['bid_window_width'],
                 y_offsets['bid_window'] + self.rows_offset,
-                x_offsets['bid_window'][i] + self.cols_offset
-            )
+                x_offsets['bid_window'][i] + self.cols_offset)
 
             # draw bid windows
             bid_window = self.bid_windows[i]
@@ -200,10 +205,10 @@ class GraphicsBoard:
 
             # initialize curses window
             self.windows['player_info_windows'][seat] = curses.newwin(
-                sizes['player_info_window_height'], sizes['player_info_window_width'],
+                sizes['player_info_window_height'],
+                sizes['player_info_window_width'],
                 y_offsets['player_info_window'][seat] + self.rows_offset,
-                x_offsets['player_info_window'][seat] + self.cols_offset
-            )
+                x_offsets['player_info_window'][seat] + self.cols_offset)
 
             # draw player info
             player_info_window = self.windows['player_info_windows'][seat]
@@ -218,7 +223,8 @@ class GraphicsBoard:
             if player['bid']:
                 player_info_window.addstr(' ' + f"Bid: {player['bid']}" + '\n')
             if activity == 'play':
-                player_info_window.addstr(' ' + f"Won: {player['tricks_taken']}")
+                player_info_window.addstr(' ' +
+                                          f"Won: {player['tricks_taken']}")
             player_info_window.box()
             player_info_window.refresh()
 
@@ -227,8 +233,7 @@ class GraphicsBoard:
         self.windows['game_info_window'] = curses.newwin(
             sizes['game_info_window_height'], sizes['game_info_window_width'],
             y_offsets['game_info_window'] + self.rows_offset,
-            x_offsets['game_info_window'] + self.cols_offset
-        )
+            x_offsets['game_info_window'] + self.cols_offset)
 
         # draw game info
         game_info_window = self.windows['game_info_window']
@@ -238,16 +243,22 @@ class GraphicsBoard:
         if activity == 'bid':
             game_info_window.addstr('\n ' + 'HAND: {hand_num}' + '\n')
             game_info_window.addstr(' ' + f'Bids Taken: {bid_total}' + '\n')
-            game_info_window.addstr(' ' + f'Bids Remaining: {hand_num - bid_total}' + '\n')
+            game_info_window.addstr(' ' +
+                                    f'Bids Remaining: {hand_num - bid_total}' +
+                                    '\n')
         else:
             if bid_total > hand_num:
                 game_info_window.attron(curses.color_pair(2))
                 game_info_window.addstr('\n ' + f'HAND: {hand_num}' + '\n')
-                game_info_window.addstr('\n ' + f'OVERBID (+{bid_total - hand_num})' + '\n')
+                game_info_window.addstr('\n ' +
+                                        f'OVERBID (+{bid_total - hand_num})' +
+                                        '\n')
             else:
                 game_info_window.attron(curses.color_pair(1))
                 game_info_window.addstr('\n ' + f'HAND: {hand_num}' + '\n')
-                game_info_window.addstr('\n ' + f'OVERBID ({bid_total - hand_num})' + '\n')
+                game_info_window.addstr('\n ' +
+                                        f'OVERBID ({bid_total - hand_num})' +
+                                        '\n')
         game_info_window.box()
         game_info_window.refresh()
 
@@ -256,8 +267,7 @@ class GraphicsBoard:
         self.windows['score_chart_window'] = curses.newwin(
             sizes['score_chart_height'], sizes['score_chart_width'],
             y_offsets['score_chart'] + self.rows_offset,
-            x_offsets['score_chart'] + self.cols_offset
-        )
+            x_offsets['score_chart'] + self.cols_offset)
 
         score_chart_window = self.windows['score_chart_window']
         score_rows = max(score_history.keys())
@@ -265,27 +275,30 @@ class GraphicsBoard:
         # draw score chart
         # draw lines and rows headers
         for i in range(1, score_rows):
-            score_chart_window.hline(2*i, 0, curses.ACS_HLINE, sizes['score_chart_width'])
-            score_chart_window.addstr(1 + 2*i, 1, f'{i}'.rjust(5))
+            score_chart_window.hline(2 * i, 0, curses.ACS_HLINE,
+                                     sizes['score_chart_width'])
+            score_chart_window.addstr(1 + 2 * i, 1, f'{i}'.rjust(5))
         for i in range(1, 4):
-            score_chart_window.vline(0, 7 + 15*i, curses.ACS_VLINE, 3 + 2*score_rows)
+            score_chart_window.vline(0, 7 + 15 * i, curses.ACS_VLINE,
+                                     3 + 2 * score_rows)
         score_chart_window.addstr(1, 1, " Hand")
         score_chart_window.box()
 
         # draw players' names and scores
         for player in players:
-            score_chart_window.addstr(1, 8 + 15*players[player]['id'], player.center(13),
-                                      curses.A_BOLD)
+            score_chart_window.addstr(1, 8 + 15 * players[player]['id'],
+                                      player.center(13), curses.A_BOLD)
 
             for i in range(1, score_rows):
-                score_chart_window.addstr(1 + 2*(i + 1), 8 + 15*players[player]['id'],
-                                          f"{score_history[i][player]}".rjust(13))
+                score_chart_window.addstr(
+                    1 + 2 * (i + 1), 8 + 15 * players[player]['id'],
+                    f"{score_history[i][player]}".rjust(13))
 
         score_chart_window.refresh()
 
     def get_bid(self, boardstate, name):
         hand_num = boardstate['hand_num']
-        players  = boardstate['players']
+        players = boardstate['players']
 
         bids = list(player['bid'] for player in players.values())
         bid_total = sum(filter(None, bids))
@@ -302,9 +315,11 @@ class GraphicsBoard:
             if inp in [curses.KEY_ENTER, ord('\n')]:
                 return self.bid_position
             elif key == curses.KEY_LEFT:
-                self.navigate_bids(-1, hand_num, players[name]['dealer'], bid_total)
+                self.navigate_bids(-1, hand_num, players[name]['dealer'],
+                                   bid_total)
             elif key == curses.KEY_RIGHT:
-                self.navigate_bids(1, hand_num, players[name]['dealer'], bid_total)
+                self.navigate_bids(1, hand_num, players[name]['dealer'],
+                                   bid_total)
 
     def navigate_bids(self, n, hand_num, dealer, bid_total):
         possible_bid_count = hand_num + 1
@@ -328,8 +343,7 @@ class GraphicsBoard:
         # pick up currently selected card
         self.windows['hand_windows'][0][self.hand_position].mvwin(
             y_offsets['hand'][0][self.hand_position] - 2 + self.rows_offset,
-            x_offsets['hand'][0][self.hand_position] + self.cols_offset
-        )
+            x_offsets['hand'][0][self.hand_position] + self.cols_offset)
 
         # wait for user to play a card
         while True:
@@ -350,8 +364,7 @@ class GraphicsBoard:
         # put down currently selected card
         self.windows['hand_windows'][0][self.hand_position].mvwin(
             y_offsets['hand'][0][self.hand_position] + self.rows_offset,
-            x_offsets['hand'][0][self.hand_position] + self.cols_offset
-        )
+            x_offsets['hand'][0][self.hand_position] + self.cols_offset)
 
         self.hand_position = (self.hand_position + n) % hand_len
 
@@ -365,8 +378,7 @@ class GraphicsBoard:
         # pick up currently selected card
         self.windows['hand_windows'][0][self.hand_position].mvwin(
             y_offsets['hand'][0][self.hand_position] - 2 + self.rows_offset,
-            x_offsets['hand'][0][self.hand_position] + self.cols_offset
-        )
+            x_offsets['hand'][0][self.hand_position] + self.cols_offset)
 
         # maybe redraw hand
 

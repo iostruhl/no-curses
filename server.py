@@ -8,6 +8,7 @@ import util.card as card
 from copy import deepcopy
 import sys
 
+
 class ClientChannel(Channel):
     def __init__(self, *args, **kwargs):
         self.name = "ANON"
@@ -67,13 +68,13 @@ class OHServer(Server):
 
         # Public (with hand display caveat)
         self.boardstate = {
-            'activity'      : "bid",
-            'next_to_act'   : 0,
-            'hand_num'      : 1,
-            'trump_card'    : None,
-            'led_card'      : None,
-            'players'       : dict(),
-            'score_history' : dict()
+            'activity': "bid",
+            'next_to_act': 0,
+            'hand_num': 1,
+            'trump_card': None,
+            'led_card': None,
+            'players': dict(),
+            'score_history': dict()
         }
 
         print("Server launched")
@@ -113,14 +114,14 @@ class OHServer(Server):
         })
         if name not in self.boardstate['players']:
             self.boardstate['players'][name] = {
-                'display_name'  : self.display_name(name),
-                'id'            : None,
-                'bid'           : None,
-                'score'         : 0,
-                'cards_in_hand' : [],
-                'card_in_play'  : None,
-                'tricks_taken'  : 0,
-                'dealer'        : False
+                'display_name': self.display_name(name),
+                'id': None,
+                'bid': None,
+                'score': 0,
+                'cards_in_hand': [],
+                'card_in_play': None,
+                'tricks_taken': 0,
+                'dealer': False
             }
 
     def display_name(self, name):
@@ -149,7 +150,8 @@ class OHServer(Server):
             ]
             shuffle(self.ordered_names)
             for name in self.boardstate['players']:
-                self.boardstate['players'][name]['id'] = self.ordered_names.index(name)
+                self.boardstate['players'][name][
+                    'id'] = self.ordered_names.index(name)
             self.boardstate['players'][self.ordered_names[3]]['dealer'] = True
 
             # This initialization should happen only once.
@@ -193,7 +195,8 @@ class OHServer(Server):
             deck.shuffle()
             for name in self.boardstate['players']:
                 self.boardstate['players'][name]['cards_in_hand'] = [
-                    deck.next().to_array() for _ in range(self.boardstate['hand_num'])
+                    deck.next().to_array()
+                    for _ in range(self.boardstate['hand_num'])
                 ]
             # Set the trump card if there are still cards remaining in the deck.
             self.boardstate['trump_card'] = deck.next().to_array()
@@ -321,10 +324,10 @@ class OHServer(Server):
         scores = [[name, self.boardstate['players'][name]['score']]
                   for name in self.boardstate['players']]
         self.send_all({
-            'action'     : "end_game",
-            'boardstate' : self.boardstate,
-            'winner'     : winner,
-            'scores'     : scores
+            'action': "end_game",
+            'boardstate': self.boardstate,
+            'winner': winner,
+            'scores': scores
         })
         if not self.untracked:
             sheets_logging.log_game(scores)
@@ -338,8 +341,8 @@ class OHServer(Server):
         for player_name in clean_boardstate['players']:
             if name != player_name:
                 clean_boardstate['players'][player_name]['cards_in_hand'] = [
-                    card.Card().to_array() for _ in range(len(
-                    self.boardstate['players'][name]['cards_in_hand']))
+                    card.Card().to_array() for _ in range(
+                        len(self.boardstate['players'][name]['cards_in_hand']))
                 ]
         return clean_boardstate
 
