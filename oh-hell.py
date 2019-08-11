@@ -58,7 +58,6 @@ class Client(ConnectionListener):
         exit(1)
 
     def Network_update(self, data):
-        print("UPDATED!!!")
         if not self.gb:
             self.gb = GraphicsBoard()
 
@@ -74,21 +73,20 @@ class Client(ConnectionListener):
                 Card(card[0], card[1]) for card in b['players'][player]['cards_in_hand']
             ]
 
+        self.gb.draw_board(b, self.name)
+
         if b['next_to_act'] != b['players'][self.name]['id']:
             # player is not the actor; just update screen
-            self.gb.draw_board(b, self.name)
             return
-
         # player must be actor, should either bid or play
-        assert b['next_to_act'] == b['players'][self.name]['id']
 
         if b['activity'] == 'bid':
             bid = self.gb.get_bid(b, self.name)
             connection.Send({'action': 'bid', 'bid': bid})
         else:
-            play = self.gb.get_play(b, self.name)
-            played_card = b['players'][self.name][play]
-            connection.Send({'action': 'play', 'play': played_card.to_array()})
+            play_index = self.gb.get_play(b, self.name)
+            played_card = b['players'][self.name]['cards_in_hand'][play_index]
+            connection.Send({'action': 'play', 'card': played_card.to_array()})
 
     def Network_end_game(self, data):
         b = data['boardstate']

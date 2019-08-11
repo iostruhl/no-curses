@@ -3,9 +3,9 @@ rank_representation = dict()
 rank_representation['A'] = ("┌─────────┐\n"
                             "│A        │\n"
                             "│x        │\n"
+                            "│         │\n"
                             "│    █    │\n"
-                            "│   █ █   │\n"
-                            "│    █    │\n"
+                            "│         │\n"
                             "│        x│\n"
                             "│        A│\n"
                             "└─────────┘")

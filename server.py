@@ -96,8 +96,7 @@ class OHServer(Server):
         self.send_all({'action': "pause"})
 
     def send_all(self, data):
-        print("Server: sending to ALL :", end = "")
-        pprint(data)
+        print("Server: sending to ALL :", data)
         [channel.Send(data) for channel in self.user_channels]
 
     def send_one(self, name, data, echo=True):
@@ -126,7 +125,7 @@ class OHServer(Server):
             }
 
     def display_name(self, name):
-        if name.split(' ')[0].lower == "alex":
+        if name.split(' ')[0].lower() == "alex":
             return name.split(' ')[1]
         return name.split(' ')[0]
 
@@ -156,9 +155,6 @@ class OHServer(Server):
                     'id'] = self.ordered_names.index(name)
                 self.boardstate['score_history'][0][name] = 0
             self.boardstate['players'][self.ordered_names[3]]['dealer'] = True
-
-            # self.boardstate['score_history'][self.boardstate['hand_num']][name] = \
-            #     self.boardstate['players'][name]['score']
 
             # This initialization should happen only once.
             self.initialize_new_game = False
@@ -314,12 +310,13 @@ class OHServer(Server):
                 self.boardstate['players'][name]['score']
 
         # Reset or update relevant boardstate values.
-        self.boardstate['players'][self.next_to_bid_first]['dealer'] = True
+        self.boardstate['players'][self.ordered_names[self.next_to_bid_first]]['dealer'] = True
         self.next_to_bid_first = (self.next_to_bid_first + 1) % 4
         self.boardstate['next_to_act'] = self.next_to_bid_first
         self.boardstate['activity'] = "bid"
         self.boardstate['hand_num'] += 1
         self.boardstate['trump_card'] = None
+        self.should_deal_hand = True
 
     def maybe_finish_game(self):
         if self.boardstate['hand_num'] <= 13:

@@ -155,8 +155,9 @@ class GraphicsBoard:
                 self.x_offsets['in_play'][seat] + self.cols_offset)
 
             # draw card in play
-            card = player['card_in_play']
-            if card:
+            card_list = player['card_in_play']
+            if card_list:
+                card = Card(card_list[0], card_list[1])
                 card_window = self.windows['in_play_windows'][seat]
                 card_window.erase()
                 card_window.attron(curses.color_pair(card.color()))
@@ -178,7 +179,7 @@ class GraphicsBoard:
         trump_window.refresh()
 
     def draw_bids(self, hand_num, dealer, bid_total):
-        for i in range(hand_num):
+        for i in range(hand_num + 1):
             # initialize curses windows
             self.windows['bid_windows'][i] = curses.newwin(
                 self.sizes['bid_window_height'], self.sizes['bid_window_width'],
@@ -220,7 +221,7 @@ class GraphicsBoard:
             player_info_window.addstr('\n ' + player['display_name'] + '\n')
             player_info_window.attroff(curses.A_BLINK)
             player_info_window.addstr(' ' + f"Score: {player['score']}" + '\n')
-            if player['bid']:
+            if player['bid'] is not None:
                 player_info_window.addstr(' ' + f"Bid: {player['bid']}" + '\n')
             if activity == 'play':
                 player_info_window.addstr(' ' +
@@ -241,7 +242,7 @@ class GraphicsBoard:
         bids = list(player['bid'] for player in players.values())
         bid_total = sum(filter(None, bids))
         if activity == 'bid':
-            game_info_window.addstr('\n ' + 'HAND: {hand_num}' + '\n')
+            game_info_window.addstr('\n ' + f'HAND: {hand_num}' + '\n')
             game_info_window.addstr(' ' + f'Bids Taken: {bid_total}' + '\n')
             game_info_window.addstr(' ' +
                                     f'Bids Remaining: {hand_num - bid_total}' +
@@ -270,7 +271,7 @@ class GraphicsBoard:
             self.x_offsets['score_chart'] + self.cols_offset)
 
         score_chart_window = self.windows['score_chart_window']
-        score_rows = max(score_history.keys())
+        score_rows = max(max(score_history.keys()), 1)
 
         # draw score chart
         # draw lines and rows headers
@@ -300,7 +301,7 @@ class GraphicsBoard:
         hand_num = boardstate['hand_num']
         players = boardstate['players']
 
-        bids = list(player['bid'] for player in players.values())
+        bids = [player['bid'] for player in players.values()]
         bid_total = sum(filter(None, bids))
 
         # start with left-most bid selected
@@ -314,10 +315,10 @@ class GraphicsBoard:
             inp = self.stdscr.getch()
             if inp in [curses.KEY_ENTER, ord('\n')]:
                 return self.bid_position
-            elif key == curses.KEY_LEFT:
+            elif inp == curses.KEY_LEFT:
                 self.navigate_bids(-1, hand_num, players[name]['dealer'],
                                    bid_total)
-            elif key == curses.KEY_RIGHT:
+            elif inp == curses.KEY_RIGHT:
                 self.navigate_bids(1, hand_num, players[name]['dealer'],
                                    bid_total)
 
@@ -328,59 +329,58 @@ class GraphicsBoard:
         # skip over undrawn illegal bid for the dealer
         if dealer and ((hand_num - bid_total) == self.bid_position):
             if n == 0:
-                self.bid_position = (self.bid_position + 1) % possible_bids
+                self.bid_position = (self.bid_position + 1) % possible_bid_count
             else:
-                self.bid_position = (self.bid_position + n) % possible_bids
+                self.bid_position = (self.bid_position + n) % possible_bid_count
 
     def get_play(self, boardstate, name):
         led_card = boardstate['led_card']
-        hand = boardstate['players'][name][hand]
+        hand = boardstate['players'][name]['cards_in_hand']
 
         # start with left-most card selected
         self.hand_position = 0
-        self.navigate_hand(0, hand, len(hand))
+        self.navigate_hand(0, hand, len(hand), led_card)
 
         # pick up currently selected card
-        self.windows['hand_windows'][0][self.hand_position].mvwin(
-            self.y_offsets['hand'][0][self.hand_position] - 2 + self.rows_offset,
-            self.x_offsets['hand'][0][self.hand_position] + self.cols_offset)
+        # self.windows['hand_windows'][0][self.hand_position].mvwin(
+        #     self.y_offsets['hand'][0][self.hand_position] - 2 + self.rows_offset,
+        #     self.x_offsets['hand'][0][self.hand_position] + self.cols_offset)
 
         # wait for user to play a card
         while True:
             # maybe use cheaper redraw
-            self.draw_hands(players, name)
+            # self.draw_hands(boardstate['players'], name)
             curses.flushinp()
             inp = self.stdscr.getch()
             if inp in [curses.KEY_ENTER, ord('\n')]:
                 return self.hand_position
             elif inp == curses.KEY_LEFT:
-                self.navigate_hand(-1, hand, len(hand))
+                self.navigate_hand(-1, hand, len(hand), led_card)
             elif inp == curses.KEY_RIGHT:
-                self.navigate_hand(1, hand, len(hand))
+                self.navigate_hand(1, hand, len(hand), led_card)
 
     def navigate_hand(self, n, hand, hand_len, led_card):
-        # maybe clear hand card
-
         # put down currently selected card
         self.windows['hand_windows'][0][self.hand_position].mvwin(
             self.y_offsets['hand'][0][self.hand_position] + self.rows_offset,
             self.x_offsets['hand'][0][self.hand_position] + self.cols_offset)
+        self.windows['hand_windows'][0][self.hand_position].refresh()
+
 
         self.hand_position = (self.hand_position + n) % hand_len
 
-        # skip over illegal cards
+        # Skip over illegal cards.
         while not hand[self.hand_position].is_playable(hand, led_card):
             if n == 0:
                 self.hand_position = (self.hand_position + 1) % hand_len
             else:
                 self.hand_position = (self.hand_position + n) % hand_len
 
-        # pick up currently selected card
+        # Pick up currently selected card.
         self.windows['hand_windows'][0][self.hand_position].mvwin(
             self.y_offsets['hand'][0][self.hand_position] - 2 + self.rows_offset,
             self.x_offsets['hand'][0][self.hand_position] + self.cols_offset)
-
-        # maybe redraw hand
+        self.windows['hand_windows'][0][self.hand_position].refresh()
 
     def id_to_seat(self, target_id, relative_to_id):
         # determine the seating of a player relative to player whose screen
