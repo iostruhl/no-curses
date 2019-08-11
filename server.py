@@ -7,7 +7,6 @@ from random import shuffle
 import util.card as card
 from copy import deepcopy
 import sys
-from pprint import pprint
 
 class ClientChannel(Channel):
     def __init__(self, *args, **kwargs):
@@ -132,7 +131,7 @@ class OHServer(Server):
     def Launch(self):
         while True:
             self.Pump()
-            sleep(0.0001)
+            sleep(0.001)
 
     # --- Game Logic ---
     def handle_ready(self):
@@ -165,8 +164,10 @@ class OHServer(Server):
         # Figures out based entirely on the current boardstate what to do,
         # and then executes that action.
         while True:
-            self.do_next_action()
+            if not self.waiting_for_user:
+                self.do_next_action()
             self.Pump()
+            sleep(0.01)
 
     def do_next_action(self):
         '''
@@ -186,10 +187,6 @@ class OHServer(Server):
             }
         }
         '''
-        # Busy wait until a user has responded.
-        if self.waiting_for_user:
-            sleep(0.1)
-            return
 
         if self.should_deal_hand:
             print('dealing')
@@ -205,24 +202,24 @@ class OHServer(Server):
             self.should_deal_hand = False
 
         if self.shouldBid():
-            print('bidding')
             self.boardstate['activity'] = "bid"
+            print("Sending bid")
             for name in self.boardstate['players']:
                 self.send_one(
                     name, {
                         'action': "update",
                         'boardstate': self.hide_non_player_hands(name=name)
-                    })
+                    }, echo = False)
             self.waiting_for_user = True
         elif self.shouldPlay():
-            print('playing')
             self.boardstate['activity'] = "play"
+            print("Sending play")
             for name in self.boardstate['players']:
                 self.send_one(
                     name, {
                         'action': "update",
                         'boardstate': self.hide_non_player_hands(name=name)
-                    })
+                    }, echo = False)
             self.waiting_for_user = True
         else:
             print('finishing')
