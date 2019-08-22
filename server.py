@@ -209,7 +209,7 @@ class OHServer(Server):
                     name, {
                         'action': "update",
                         'boardstate': self.hide_non_player_hands(name=name)
-                    }, echo = False)
+                    }, echo = True)
             self.waiting_for_user = True
         elif self.shouldPlay():
             self.boardstate['activity'] = "play"
@@ -219,7 +219,7 @@ class OHServer(Server):
                     name, {
                         'action': "update",
                         'boardstate': self.hide_non_player_hands(name=name)
-                    }, echo = False)
+                    }, echo = True)
             self.waiting_for_user = True
         else:
             print('finishing')
@@ -342,7 +342,7 @@ class OHServer(Server):
             if name != player_name:
                 clean_boardstate['players'][player_name]['cards_in_hand'] = [
                     card.Card().to_array() for _ in range(
-                        len(self.boardstate['players'][name]['cards_in_hand']))
+                        len(self.boardstate['players'][player_name]['cards_in_hand']))
                 ]
         return clean_boardstate
 

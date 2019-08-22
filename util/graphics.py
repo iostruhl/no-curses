@@ -24,15 +24,11 @@ class GraphicsBoard:
                  [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
                  [16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28]],
         'in_play': [28, 22, 16, 22],
-        'trump':
-        1,
-        'bid_window':
-        54,
+        'trump': 1,
+        'bid_window': 54,
         'player_info_window': [37, 23, 10, 23],
-        'game_info_window':
-        1,
-        'score_chart':
-        1
+        'game_info_window': 1,
+        'score_chart': 1
     }
 
     x_offsets = {
@@ -41,14 +37,11 @@ class GraphicsBoard:
                  [15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75],
                  [89, 89, 89, 89, 89, 89, 89, 89, 89, 89, 89, 89, 89]],
         'in_play': [45, 30, 45, 60],
-        'trump':
-        1,
+        'trump': 1,
         'bid_window': [15, 19, 23, 27, 31, 35, 39, 43, 47, 51, 55, 59, 63, 67],
         'player_info_window': [44, 15, 44, 73],
-        'game_info_window':
-        89,
-        'score_chart':
-        112
+        'game_info_window': 89,
+        'score_chart': 112
     }
 
     def __init__(self):
@@ -341,15 +334,8 @@ class GraphicsBoard:
         self.hand_position = 0
         self.navigate_hand(0, hand, len(hand), led_card)
 
-        # pick up currently selected card
-        # self.windows['hand_windows'][0][self.hand_position].mvwin(
-        #     self.y_offsets['hand'][0][self.hand_position] - 2 + self.rows_offset,
-        #     self.x_offsets['hand'][0][self.hand_position] + self.cols_offset)
-
         # wait for user to play a card
         while True:
-            # maybe use cheaper redraw
-            # self.draw_hands(boardstate['players'], name)
             curses.flushinp()
             inp = self.stdscr.getch()
             if inp in [curses.KEY_ENTER, ord('\n')]:
@@ -360,27 +346,42 @@ class GraphicsBoard:
                 self.navigate_hand(1, hand, len(hand), led_card)
 
     def navigate_hand(self, n, hand, hand_len, led_card):
-        # put down currently selected card
+        # put down previously selected card
+        self.windows['hand_windows'][0][self.hand_position].erase()
+        self.windows['hand_windows'][0][self.hand_position].refresh()
         self.windows['hand_windows'][0][self.hand_position].mvwin(
             self.y_offsets['hand'][0][self.hand_position] + self.rows_offset,
             self.x_offsets['hand'][0][self.hand_position] + self.cols_offset)
-        self.windows['hand_windows'][0][self.hand_position].refresh()
-
 
         self.hand_position = (self.hand_position + n) % hand_len
 
-        # Skip over illegal cards.
+        # skip over illegal cards
         while not hand[self.hand_position].is_playable(hand, led_card):
             if n == 0:
                 self.hand_position = (self.hand_position + 1) % hand_len
             else:
                 self.hand_position = (self.hand_position + n) % hand_len
 
-        # Pick up currently selected card.
+        # pick up currently selected card
         self.windows['hand_windows'][0][self.hand_position].mvwin(
             self.y_offsets['hand'][0][self.hand_position] - 2 + self.rows_offset,
             self.x_offsets['hand'][0][self.hand_position] + self.cols_offset)
-        self.windows['hand_windows'][0][self.hand_position].refresh()
+
+        # only draw cards above and including previously selected card
+        # this should help minimize flicker, but ultimately might be pointless
+        if (n <= 0 and self.hand_position == (hand_len - 1)):
+            self.redraw_hand(hand, 0)
+        else:
+            self.redraw_hand(hand, max(self.hand_position - 1, 0))
+
+    def redraw_hand(self, hand, start_index):
+        for c in range(start_index, len(hand)):
+            card = hand[c]
+            self.windows['hand_windows'][0][c].erase()
+            card_window = self.windows['hand_windows'][0][c]
+            card_window.attron(curses.color_pair(card.color()))
+            card_window.addstr(card.to_ascii())
+            card_window.refresh()
 
     def id_to_seat(self, target_id, relative_to_id):
         # determine the seating of a player relative to player whose screen
