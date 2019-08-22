@@ -93,7 +93,6 @@ class GraphicsBoard:
         self.stdscr.refresh()
 
     def draw_board(self, boardstate, name):
-        curses.flash()
         activity = boardstate['activity']
         hand_num = boardstate['hand_num']
         next_to_act = boardstate['next_to_act']
@@ -160,6 +159,8 @@ class GraphicsBoard:
                 card_window.refresh()
 
     def draw_trump(self, trump):
+        if trump is None:
+            return
         # initialize curses window
         self.windows['trump_window'] = curses.newwin(
             self.sizes['card_height'], self.sizes['card_width'],
@@ -195,7 +196,7 @@ class GraphicsBoard:
             bid_window.box()
             bid_window.refresh()
 
-    def draw_player_info(self, players, name, active_id, activity):
+    def draw_player_info(self, players, name, active_id, activity, game_winner = None):
         for player in players.values():
             seat = self.id_to_seat(player['id'], players[name]['id'])
 
@@ -209,7 +210,9 @@ class GraphicsBoard:
             # draw player info
             player_info_window = self.windows['player_info_windows'][seat]
             player_info_window.erase()
-            if player['dealer']:
+            if game_winner and player['id'] == players[game_winner]['id']:
+                player_info_window.attron(curses.color_pair(6))
+            if not game_winner and player['dealer']:
                 player_info_window.attron(curses.color_pair(5))
             if player['id'] == active_id:
                 player_info_window.attron(curses.A_BLINK)
@@ -218,7 +221,7 @@ class GraphicsBoard:
             player_info_window.addstr(' ' + f"Score: {player['score']}" + '\n')
             if player['bid'] is not None:
                 player_info_window.addstr(' ' + f"Bid: {player['bid']}" + '\n')
-            if activity == 'play':
+            if activity == 'play' or activity == 'finish':
                 player_info_window.addstr(' ' +
                                           f"Won: {player['tricks_taken']}")
             player_info_window.box()
@@ -253,7 +256,7 @@ class GraphicsBoard:
                 game_info_window.attron(curses.color_pair(1))
                 game_info_window.addstr('\n ' + f'HAND: {hand_num}' + '\n')
                 game_info_window.addstr('\n ' +
-                                        f'OVERBID ({bid_total - hand_num})' +
+                                        f'UNDERBID ({bid_total - hand_num})' +
                                         '\n')
         game_info_window.box()
         game_info_window.refresh()
@@ -293,6 +296,22 @@ class GraphicsBoard:
                     f"{score_history[i][player]}".rjust(13))
 
         score_chart_window.refresh()
+
+    def end_game(self, boardstate, name, winner):
+        activity = boardstate['activity']
+        players = boardstate['players']
+        score_history = boardstate['score_history']
+
+        self.erase_board()
+
+        # Draw ending screen.
+        self.draw_player_info(players, name, None, None, winner)
+        self.draw_score_chart(players, score_history)
+
+        # Wait for user to press any key to exit.
+        curses.flushinp()
+        key = self.stdscr.getch()
+        exit()
 
     def get_bid(self, boardstate, name):
         hand_num = boardstate['hand_num']

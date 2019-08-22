@@ -13,10 +13,9 @@ class Client(ConnectionListener):
         print("Oh Hell client started")
         print("Ctrl-C to exit")
         self.name = name
-        self.sort_hand_ascending = sort_hand_ascending
         self.gb = None
         # get a nickname from the user before starting
-        connection.Send({"action": "name", "name": name})
+        connection.Send({"action": "name", "name": name, 'reverse_sort': sort_hand_ascending})
 
     def Loop(self):
         connection.Pump()
@@ -47,15 +46,13 @@ class Client(ConnectionListener):
         connection.Send({'action': "ready", 'name': self.name})
 
     def Network_names(self, data):
-        print("*** users:", ', '.join([p for p in data['names']]), "***")
-
-        # game is about to start; start up graphics
-        # if len(data['names']) == 4:
-        # self.gb = GraphicsBoard()
+        print("*** users:", ', '.join(data['names']), "***")
 
     def Network_pause(self, data):
-        print("*** USER HAS DISCONNECTED, FATAL ***")
-        exit(1)
+        # Call destructor on gb to end curses.
+        del self.gb
+        self.gb = None
+        print(data['disconnected_name'], "has disconnected.")
 
     def Network_update(self, data):
         if not self.gb:
@@ -78,8 +75,8 @@ class Client(ConnectionListener):
         if b['next_to_act'] != b['players'][self.name]['id']:
             # player is not the actor; just update screen
             return
-        # player must be actor, should either bid or play
 
+        # player must be actor, should either bid or play
         if b['activity'] == 'bid':
             bid = self.gb.get_bid(b, self.name)
             connection.Send({'action': 'bid', 'bid': bid})
@@ -89,9 +86,7 @@ class Client(ConnectionListener):
             connection.Send({'action': 'play', 'card': played_card.to_array()})
 
     def Network_end_game(self, data):
-        b = data['boardstate']
-        w = data['winner']
-        self.gb.end_game(b, w)
+        self.gb.end_game(data['boardstate'], self.name, data['winner'])
 
 
 if __name__ == "__main__":

@@ -32,7 +32,7 @@ class ClientChannel(Channel):
             ]
             self.name = process.extract(data['name'], choices, limit=1)[0][0]
 
-        self._server.handle_name(self.name)
+        self._server.handle_name(self.name, data['reverse_sort'])
 
     def Network_ready(self, data):
         print("Client", self.name, "sent", data)
@@ -59,6 +59,7 @@ class OHServer(Server):
         self.initialize_new_game = True
         self.ready_count = 0
         self.ordered_names = []
+        self.paused = False
 
         # In game specific
         self.waiting_for_user = False
@@ -68,6 +69,7 @@ class OHServer(Server):
         # Public (with hand display caveat)
         self.boardstate = {
             'activity': "bid",
+            'reverse_sort': False,
             'next_to_act': 0,
             'hand_num': 1,
             'trump_card': None,
@@ -85,18 +87,27 @@ class OHServer(Server):
 
     def remove_channel(self, channel):
         self.ready_count -= 1
-        print("Remove Player " + str(channel.name))
+        print("Removing player:", channel.name)
         self.user_channels.remove(channel)
         if not self.initialize_new_game:
-            self.send_pause()
-
-    def send_pause(self):
-        # DO SOME OTHER STUFF HERE
-        self.send_all({'action': "pause"})
+            print("Pausing game.")
+            self.paused = True
+            self.send_all({
+                'action': "pause",
+                'disconnected_name': channel.name
+            })
 
     def send_all(self, data):
         print("Server: sending to ALL :", data)
         [channel.Send(data) for channel in self.user_channels]
+
+    def send_all_hide_hands(self):
+        for name in self.boardstate['players']:
+            self.send_one(
+                name, {
+                    'action': "update",
+                    'boardstate': self.hide_non_player_hands(name=name)
+                }, echo = False)
 
     def send_one(self, name, data, echo=True):
         for channel in self.user_channels:
@@ -105,7 +116,7 @@ class OHServer(Server):
                     print("Server: sending to", name, ":", data)
                 channel.Send(data)
 
-    def handle_name(self, name):
+    def handle_name(self, name, reverse_sort):
         self.send_one(name, {'action': "server_name", 'name': name})
         self.send_all({
             'action': "names",
@@ -114,6 +125,7 @@ class OHServer(Server):
         if name not in self.boardstate['players']:
             self.boardstate['players'][name] = {
                 'display_name': self.display_name(name),
+                'reverse_sort': reverse_sort,
                 'id': None,
                 'bid': None,
                 'score': 0,
@@ -140,8 +152,8 @@ class OHServer(Server):
             self.start_or_resume_game()
 
     def start_or_resume_game(self):
-        print("Game starting.")
         if self.initialize_new_game:
+            print("*** GAME STARTING ***")
             # Set the ids of the players to {0..3}
             # Indicating their position at the start.
             self.ordered_names = [
@@ -157,13 +169,16 @@ class OHServer(Server):
 
             # This initialization should happen only once.
             self.initialize_new_game = False
+        else:
+            print("*** GAME RESUMING ***")
 
         # If a user disconnected, this may be True;
         # setting it to False will replay the last action.
         self.waiting_for_user = False
+        self.paused = False
         # Figures out based entirely on the current boardstate what to do,
         # and then executes that action.
-        while True:
+        while not self.paused:
             if not self.waiting_for_user:
                 self.do_next_action()
             self.Pump()
@@ -189,47 +204,38 @@ class OHServer(Server):
         '''
 
         if self.should_deal_hand:
-            print('dealing')
+            print('Dealing.')
             deck = card.Deck()
             deck.shuffle()
             for name in self.boardstate['players']:
-                self.boardstate['players'][name]['cards_in_hand'] = [
-                    deck.next().to_array()
-                    for _ in range(self.boardstate['hand_num'])
-                ]
+                sorted_hand = sorted([deck.next() for _ in range(self.boardstate['hand_num'])])
+                if self.boardstate['players'][name]['reverse_sort']:
+                    sorted_hand.reverse()
+                self.boardstate['players'][name]['cards_in_hand'] = [c.to_array() for c in sorted_hand]
+
             # Set the trump card if there are still cards remaining in the deck.
-            self.boardstate['trump_card'] = deck.next().to_array()
+            trump = deck.next()
+            self.boardstate['trump_card'] = trump.to_array() if trump is not None else None
             self.should_deal_hand = False
 
         if self.shouldBid():
             self.boardstate['activity'] = "bid"
-            print("Sending bid")
-            for name in self.boardstate['players']:
-                self.send_one(
-                    name, {
-                        'action': "update",
-                        'boardstate': self.hide_non_player_hands(name=name)
-                    }, echo = False)
+            print("Sending bid.")
+            self.send_all_hide_hands()
             self.waiting_for_user = True
         elif self.shouldPlay():
             self.boardstate['activity'] = "play"
-            print("Sending play")
-            for name in self.boardstate['players']:
-                self.send_one(
-                    name, {
-                        'action': "update",
-                        'boardstate': self.hide_non_player_hands(name=name)
-                    }, echo = False)
+            print("Sending play.")
+            self.send_all_hide_hands()
             self.waiting_for_user = True
         else:
-            print("Finishing")
             self.boardstate['activity'] = "finish"
-            for name in self.boardstate['players']:
-                self.send_one(
-                    name, {
-                        'action': "update",
-                        'boardstate': self.hide_non_player_hands(name=name)
-                    }, echo = True)
+            self.send_all_hide_hands()
+            # Update the boardstate and then sleep for 2 seconds
+            # to allow clients to display the trick.
+            self.Pump()
+            sleep(1.5)
+
             self.finish_trick()
             self.maybe_finish_hand()
             self.maybe_finish_game()
@@ -336,6 +342,7 @@ class OHServer(Server):
             'winner': winner,
             'scores': scores
         })
+        self.Pump()
         if not self.untracked:
             sheets_logging.log_game(scores)
 
@@ -366,5 +373,5 @@ if __name__ == "__main__":
     s = OHServer(untracked=(len(sys.argv) == 3), localaddr=(host, int(port)))
     try:
         s.Launch()
-    except:
-        print("\nServer killed by signal.")
+    except Exception as e:
+        print(e)
