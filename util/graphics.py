@@ -67,13 +67,14 @@ class GraphicsBoard:
         # offsets to center UI
         self.cols_offset = 0
         self.rows_offset = 0
-        # self.cols_offset = (curses.COLS - 181) // 2
-        # self.rows_offset = (curses.LINES - 58) // 2
+        self.cols_offset = (curses.COLS - 181) // 2
+        self.rows_offset = (curses.LINES - 58) // 2
 
     def __del__(self):
         # shut down curses
         curses.nocbreak()
         curses.echo()
+        curses.endwin()
 
     def erase_board(self):
         # all windows and panels for curses
@@ -92,6 +93,7 @@ class GraphicsBoard:
         self.stdscr.refresh()
 
     def draw_board(self, boardstate, name):
+        curses.flash()
         activity = boardstate['activity']
         hand_num = boardstate['hand_num']
         next_to_act = boardstate['next_to_act']
@@ -257,24 +259,26 @@ class GraphicsBoard:
         game_info_window.refresh()
 
     def draw_score_chart(self, players, score_history):
+        score_rows = max(score_history.keys())
+
         # initialize curses window
         self.windows['score_chart_window'] = curses.newwin(
-            self.sizes['score_chart_height'], self.sizes['score_chart_width'],
+            3 + 2 * score_rows, self.sizes['score_chart_width'],
             self.y_offsets['score_chart'] + self.rows_offset,
             self.x_offsets['score_chart'] + self.cols_offset)
 
         score_chart_window = self.windows['score_chart_window']
-        score_rows = max(max(score_history.keys()), 1)
 
         # draw score chart
         # draw lines and rows headers
-        for i in range(1, score_rows):
+        for i in range(1, score_rows + 1):
             score_chart_window.hline(2 * i, 0, curses.ACS_HLINE,
                                      self.sizes['score_chart_width'])
             score_chart_window.addstr(1 + 2 * i, 1, f'{i}'.rjust(5))
         for i in range(1, 4):
             score_chart_window.vline(0, 7 + 15 * i, curses.ACS_VLINE,
                                      3 + 2 * score_rows)
+        score_chart_window.vline(0, 7, curses.ACS_VLINE, 3 + 2 * score_rows)
         score_chart_window.addstr(1, 1, " Hand")
         score_chart_window.box()
 
@@ -283,9 +287,9 @@ class GraphicsBoard:
             score_chart_window.addstr(1, 8 + 15 * players[player]['id'],
                                       player.center(13), curses.A_BOLD)
 
-            for i in range(1, score_rows):
+            for i in range(1, score_rows + 1):
                 score_chart_window.addstr(
-                    1 + 2 * (i + 1), 8 + 15 * players[player]['id'],
+                    1 + 2 * i, 8 + 15 * players[player]['id'],
                     f"{score_history[i][player]}".rjust(13))
 
         score_chart_window.refresh()

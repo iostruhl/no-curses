@@ -209,7 +209,7 @@ class OHServer(Server):
                     name, {
                         'action': "update",
                         'boardstate': self.hide_non_player_hands(name=name)
-                    }, echo = True)
+                    }, echo = False)
             self.waiting_for_user = True
         elif self.shouldPlay():
             self.boardstate['activity'] = "play"
@@ -219,10 +219,17 @@ class OHServer(Server):
                     name, {
                         'action': "update",
                         'boardstate': self.hide_non_player_hands(name=name)
-                    }, echo = True)
+                    }, echo = False)
             self.waiting_for_user = True
         else:
-            print('finishing')
+            print("Finishing")
+            self.boardstate['activity'] = "finish"
+            for name in self.boardstate['players']:
+                self.send_one(
+                    name, {
+                        'action': "update",
+                        'boardstate': self.hide_non_player_hands(name=name)
+                    }, echo = True)
             self.finish_trick()
             self.maybe_finish_hand()
             self.maybe_finish_game()

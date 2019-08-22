@@ -83,7 +83,7 @@ class Client(ConnectionListener):
         if b['activity'] == 'bid':
             bid = self.gb.get_bid(b, self.name)
             connection.Send({'action': 'bid', 'bid': bid})
-        else:
+        elif b['activity'] == 'play':
             play_index = self.gb.get_play(b, self.name)
             played_card = b['players'][self.name]['cards_in_hand'][play_index]
             connection.Send({'action': 'play', 'card': played_card.to_array()})
