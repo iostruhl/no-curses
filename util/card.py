@@ -41,7 +41,8 @@ class Card:
     # Prints the visual representation of the card, for curses graphics
     def to_ascii(self) -> str:
         if self.visible:
-            return ascii_representation(self.rank, self.suit_ascii[self.suit][0])
+            return ascii_representation(self.rank,
+                                        self.suit_ascii[self.suit][0])
         return hidden_ascii_representation()
 
     def is_playable(self, hand, led_card):

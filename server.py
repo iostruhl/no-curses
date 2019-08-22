@@ -8,6 +8,7 @@ import util.card as card
 from copy import deepcopy
 import sys
 
+
 class ClientChannel(Channel):
     def __init__(self, *args, **kwargs):
         self.name = "ANON"
@@ -103,11 +104,11 @@ class OHServer(Server):
 
     def send_all_hide_hands(self):
         for name in self.boardstate['players']:
-            self.send_one(
-                name, {
-                    'action': "update",
-                    'boardstate': self.hide_non_player_hands(name=name)
-                }, echo = False)
+            self.send_one(name, {
+                'action': "update",
+                'boardstate': self.hide_non_player_hands(name=name)
+            },
+                          echo=False)
 
     def send_one(self, name, data, echo=True):
         for channel in self.user_channels:
@@ -208,14 +209,18 @@ class OHServer(Server):
             deck = card.Deck()
             deck.shuffle()
             for name in self.boardstate['players']:
-                sorted_hand = sorted([deck.next() for _ in range(self.boardstate['hand_num'])])
+                sorted_hand = sorted(
+                    [deck.next() for _ in range(self.boardstate['hand_num'])])
                 if self.boardstate['players'][name]['reverse_sort']:
                     sorted_hand.reverse()
-                self.boardstate['players'][name]['cards_in_hand'] = [c.to_array() for c in sorted_hand]
+                self.boardstate['players'][name]['cards_in_hand'] = [
+                    c.to_array() for c in sorted_hand
+                ]
 
             # Set the trump card if there are still cards remaining in the deck.
             trump = deck.next()
-            self.boardstate['trump_card'] = trump.to_array() if trump is not None else None
+            self.boardstate['trump_card'] = trump.to_array(
+            ) if trump is not None else None
             self.should_deal_hand = False
 
         if self.shouldBid():
@@ -320,7 +325,8 @@ class OHServer(Server):
                 self.boardstate['players'][name]['score']
 
         # Reset or update relevant boardstate values.
-        self.boardstate['players'][self.ordered_names[self.next_to_bid_first]]['dealer'] = True
+        self.boardstate['players'][self.ordered_names[
+            self.next_to_bid_first]]['dealer'] = True
         self.next_to_bid_first = (self.next_to_bid_first + 1) % 4
         self.boardstate['next_to_act'] = self.next_to_bid_first
         self.boardstate['activity'] = "bid"
@@ -356,7 +362,8 @@ class OHServer(Server):
             if name != player_name:
                 clean_boardstate['players'][player_name]['cards_in_hand'] = [
                     card.Card().to_array() for _ in range(
-                        len(self.boardstate['players'][player_name]['cards_in_hand']))
+                        len(self.boardstate['players'][player_name]
+                            ['cards_in_hand']))
                 ]
         return clean_boardstate
 

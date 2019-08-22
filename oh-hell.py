@@ -15,7 +15,11 @@ class Client(ConnectionListener):
         self.name = name
         self.gb = None
         # get a nickname from the user before starting
-        connection.Send({"action": "name", "name": name, 'reverse_sort': sort_hand_ascending})
+        connection.Send({
+            "action": "name",
+            "name": name,
+            'reverse_sort': sort_hand_ascending
+        })
 
     def Loop(self):
         connection.Pump()
@@ -67,7 +71,8 @@ class Client(ConnectionListener):
             b['led_card'] = Card(b['led_card'][0], b['led_card'][1])
         for player in b['players']:
             b['players'][player]['cards_in_hand'] = [
-                Card(card[0], card[1]) for card in b['players'][player]['cards_in_hand']
+                Card(card[0], card[1])
+                for card in b['players'][player]['cards_in_hand']
             ]
 
         self.gb.draw_board(b, self.name)
