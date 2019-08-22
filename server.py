@@ -72,7 +72,7 @@ class OHServer(Server):
             'activity': "bid",
             'reverse_sort': False,
             'next_to_act': 0,
-            'hand_num': 13,
+            'hand_num': 1,
             'trump_card': None,
             'led_card': None,
             'players': dict(),
