@@ -72,7 +72,7 @@ class OHServer(Server):
             'activity': "bid",
             'reverse_sort': False,
             'next_to_act': 0,
-            'hand_num': 1,
+            'hand_num': 13,
             'trump_card': None,
             'led_card': None,
             'players': dict(),
@@ -350,11 +350,11 @@ class OHServer(Server):
         })
         self.Pump()
         if not self.untracked:
-            sheets_logging.log_game(scores)
+            sheets_logging.log_game(dict(scores))
 
-        # Wait for the user to ctrl c. Eventually we can just reset and start another game immediately.
-        while True:
-            sleep(1000)
+        # Press any key to exit
+        input()
+        exit()
 
     def hide_non_player_hands(self, name):
         clean_boardstate = deepcopy(self.boardstate)
