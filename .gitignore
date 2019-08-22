@@ -105,5 +105,3 @@ venv.bak/
 
 # vim
 *.swp
-
-*.pickle
