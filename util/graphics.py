@@ -412,15 +412,11 @@ class GraphicsBoard:
             self.rows_offset,
             self.x_offsets['hand'][0][self.hand_position] + self.cols_offset)
 
-        # only draw cards above and including previously selected card
-        # this should help minimize flicker, but ultimately might be pointless
-        if (n <= 0 and self.hand_position == (hand_len - 1)):
-            self.redraw_hand(hand, 0)
-        else:
-            self.redraw_hand(hand, max(self.hand_position - 1, 0))
+        # redraw the entire hand
+        self.redraw_hand(hand)
 
-    def redraw_hand(self, hand, start_index):
-        for c in range(start_index, len(hand)):
+    def redraw_hand(self, hand):
+        for c in range(len(hand)):
             card = hand[c]
             self.windows['hand_windows'][0][c].erase()
             card_window = self.windows['hand_windows'][0][c]
