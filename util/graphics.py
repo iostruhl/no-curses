@@ -306,7 +306,7 @@ class GraphicsBoard:
                                       player.center(13), curses.A_BOLD)
 
             for i in range(1, score_rows + 1):
-                if score_history[i][player] > score_history[i-1][player]:
+                if score_history[i][player] > score_history[i - 1][player]:
                     score_chart_window.attron(curses.color_pair(2))
                 else:
                     score_chart_window.attron(curses.color_pair(1))
