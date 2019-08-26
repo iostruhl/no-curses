@@ -261,14 +261,26 @@ class OHServer(Server):
                 return True
         return False
 
+    def is_legal_bid(name, bid):
+        return True
+
     def handle_bid(self, name: str, bid: int):
+        if not is_legal_bid(name, bid):
+            print("Not a legal bid! Ignoring.")
+            return
         # Increment next_to_act mod 4
         self.boardstate['next_to_act'] = (self.boardstate['next_to_act'] +
                                           1) % 4
         self.boardstate['players'][name]['bid'] = bid
         self.waiting_for_user = False
 
+    def is_legal_play(name, card):
+        return True
+
     def handle_play_card(self, name: str, card: list):
+        if not is_legal_play(name, card):
+            print("Not a legal play! Ignoring.")
+            return
         # Increment next_to_act mod 4
         self.boardstate['next_to_act'] = (self.boardstate['next_to_act'] +
                                           1) % 4
