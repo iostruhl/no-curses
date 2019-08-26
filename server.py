@@ -5,6 +5,7 @@ from util import sheets_logging
 from time import sleep
 from random import shuffle
 import util.card as card
+from util.mariona_names import get_mariona_name
 from copy import deepcopy
 import sys
 
@@ -138,6 +139,8 @@ class OHServer(Server):
 
     def display_name(self, name):
         if name.split(' ')[0].lower() == "alex":
+            if name.split(' ')[1].lower() == "mariona":
+                return get_mariona_name()
             return name.split(' ')[1]
         return name.split(' ')[0]
 
@@ -347,6 +350,10 @@ class OHServer(Server):
         self.boardstate['hand_num'] += 1
         self.boardstate['trump_card'] = None
         self.should_deal_hand = True
+
+        # Change Mariona's name.
+        self.boardstate['players']['Alex Mariona']['display_name'] = \
+            get_mariona_name()
 
     def maybe_finish_game(self):
         if self.boardstate['hand_num'] <= 13:
