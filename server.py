@@ -23,18 +23,22 @@ class ClientChannel(Channel):
     ##################################
 
     def Network_name(self, data):
-        print("Client", self.name, "sent", data)
-        if self._server.untracked:
-            self.name = data['name']
-        else:
-            # chooses the best matched full name, so that we can log easily at the end
-            choices = [
-                "Ben Harpe", "Alex Wulff", "Alex Mariona", "Owen Schafer",
-                "Isaac Struhl"
-            ]
-            self.name = process.extract(data['name'], choices, limit=1)[0][0]
+        if self in self._server.user_channels:
+            try:
+                print("Client", self.name, "sent", data)
+                if self._server.untracked:
+                    self.name = data['name']
+                else:
+                    # chooses the best matched full name, so that we can log easily at the end
+                    choices = [
+                        "Ben Harpe", "Alex Wulff", "Alex Mariona", "Owen Schafer",
+                        "Isaac Struhl"
+                    ]
+                    self.name = process.extract(data['name'], choices, limit=1)[0][0]
 
-        self._server.handle_name(self.name, data['reverse_sort'])
+                self._server.handle_name(self.name, data['reverse_sort'])
+            except:
+                self._server.user_channels.remove(self)
 
     def Network_ready(self, data):
         print("Client", self.name, "sent", data)
@@ -88,15 +92,16 @@ class OHServer(Server):
             self.user_channels.append(channel)
 
     def remove_channel(self, channel):
-        self.ready_count -= 1
-        print("Removing player:", channel.name)
-        self.user_channels.remove(channel)
-        if not self.initialize_new_game:
-            print("Pausing game.")
-            self.paused = True
-            self.send_all({
-                'action': "pause",
-                'disconnected_name': channel.name
+        if channel in self.user_channels:
+            self.ready_count -= 1
+            print("Removing player:", channel.name)
+            self.user_channels.remove(channel)
+            if not self.initialize_new_game:
+                print("Pausing game.")
+                self.paused = True
+                self.send_all({
+                    'action': "pause",
+                    'disconnected_name': channel.name
             })
 
     def send_all(self, data):
