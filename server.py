@@ -31,10 +31,11 @@ class ClientChannel(Channel):
                 else:
                     # chooses the best matched full name, so that we can log easily at the end
                     choices = [
-                        "Ben Harpe", "Alex Wulff", "Alex Mariona", "Owen Schafer",
-                        "Isaac Struhl"
+                        "Ben Harpe", "Alex Wulff", "Alex Mariona",
+                        "Owen Schafer", "Isaac Struhl"
                     ]
-                    self.name = process.extract(data['name'], choices, limit=1)[0][0]
+                    self.name = process.extract(data['name'], choices,
+                                                limit=1)[0][0]
 
                 self._server.handle_name(self.name, data['reverse_sort'])
             except:
@@ -102,7 +103,7 @@ class OHServer(Server):
                 self.send_all({
                     'action': "pause",
                     'disconnected_name': channel.name
-            })
+                })
 
     def send_all(self, data):
         print("Server: sending to ALL :", data)
@@ -333,7 +334,8 @@ class OHServer(Server):
             tricks_taken = self.boardstate['players'][name]['tricks_taken']
             bid = self.boardstate['players'][name]['bid']
             # Update raw hand data for logging.
-            raw_hand_data.append([name, self.boardstate['hand_num'], bid, tricks_taken])
+            raw_hand_data.append(
+                [name, self.boardstate['hand_num'], bid, tricks_taken])
             if tricks_taken == bid:
                 self.boardstate['players'][name][
                     'score'] += 10 + tricks_taken**2
@@ -359,8 +361,9 @@ class OHServer(Server):
         self.boardstate['trump_card'] = None
         self.should_deal_hand = True
 
-        # Change Mariona's name.
-        self.boardstate['players']['Alex Mariona']['display_name'] = \
+        # Change Mariona's name, if Mariona is playing.
+        if 'Alex Mariona' in self.boardstate['players']:
+            self.boardstate['players']['Alex Mariona']['display_name'] = \
             get_mariona_name()
 
         # Log hand.

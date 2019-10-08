@@ -10,7 +10,7 @@ SCOPES = ['https://www.googleapis.com/auth/spreadsheets']
 # Sheet ID and range
 OH_HELL_SHEET_ID = '1YMAGaRRk8fyXrDx_AK-gkubVFqKnrK9p8CE9znAfZKw'
 OH_HELL_SHEET_RANGE = 'Scores!B3:F'
-OH_HELL_HAND_SHEET_RANGE = 'Hand_Raw_Data!B2:D'
+OH_HELL_HAND_SHEET_RANGE = 'Hand_Raw_Data!A2:D'
 
 # set up credentials
 creds = None
@@ -42,11 +42,13 @@ service = build('sheets', 'v4', credentials=creds)
 def log_hand(raw_hand_data: list):
     print("LOGGING HAND")
     result = service.spreadsheets().values().get(
-        spreadsheetId=OH_HELL_SHEET_ID, range=OH_HELL_HAND_SHEET_RANGE).execute()
+        spreadsheetId=OH_HELL_SHEET_ID,
+        range=OH_HELL_HAND_SHEET_RANGE).execute()
 
     values = result.get('values', [])
-    row_add_range = 'Hand_Raw_Data!B%d:D' % (len(values) + 3)
+    row_add_range = 'Hand_Raw_Data!A%d:D' % (len(values) + 2)
     print("updating to", row_add_range)
+    print(raw_hand_data)
 
     result = service.spreadsheets().values().append(
         spreadsheetId=OH_HELL_SHEET_ID,
