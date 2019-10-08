@@ -325,12 +325,15 @@ class OHServer(Server):
             if len(self.boardstate['players'][name]['cards_in_hand']) != 0:
                 return
 
-        # Update player states
+        # Update player states.
         self.boardstate['score_history'][self.boardstate['hand_num']] = dict()
+        raw_hand_data = []
         for name in self.boardstate['players']:
-            # Update score
+            # Update score.
             tricks_taken = self.boardstate['players'][name]['tricks_taken']
             bid = self.boardstate['players'][name]['bid']
+            # Update raw hand data for logging.
+            raw_hand_data.append([name, self.boardstate['hand_num'], bid, tricks_taken])
             if tricks_taken == bid:
                 self.boardstate['players'][name][
                     'score'] += 10 + tricks_taken**2
@@ -359,6 +362,9 @@ class OHServer(Server):
         # Change Mariona's name.
         self.boardstate['players']['Alex Mariona']['display_name'] = \
             get_mariona_name()
+
+        # Log hand.
+        sheets_logging.log_hand(raw_hand_data)
 
     def maybe_finish_game(self):
         if self.boardstate['hand_num'] <= 13:
