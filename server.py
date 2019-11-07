@@ -32,7 +32,7 @@ class ClientChannel(Channel):
                     # chooses the best matched full name, so that we can log easily at the end
                     choices = [
                         "Ben Harpe", "Alex Wulff", "Alex Mariona",
-                        "Owen Schafer", "Isaac Struhl"
+                        "Owen Schafer", "Isaac Struhl", "Joey Minatel"
                     ]
                     self.name = process.extract(data['name'], choices,
                                                 limit=1)[0][0]

@@ -80,7 +80,8 @@ def log_game(gamescores: dict):
                 '', gamescores["Owen Schafer"] if "Owen Schafer" in gamescores
                 else '', gamescores["Isaac Struhl"]
                 if "Isaac Struhl" in gamescores else '',
-                gamescores["Alex Wulff"] if "Alex Wulff" in gamescores else ''
+                gamescores["Alex Wulff"] if "Alex Wulff" in gamescores else '',
+                gamescores["Joey Minatel"] if "Joey Minatel" in gamescores else ''
             ]]
         }).execute()
     print(result)
