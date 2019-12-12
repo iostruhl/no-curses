@@ -15,7 +15,11 @@ class GraphicsBoard:
         'game_info_window_height': 5,
         'game_info_window_width': 20,
         'score_chart_height': 29,
-        'score_chart_width': 68
+        'score_chart_width': 68,
+        'chat_log_height': 20,
+        'chat_log_width': 68,
+        'chat_entry_height': 3,
+        'chat_entry_width': 68,
     }
 
     y_offsets = {
@@ -24,15 +28,13 @@ class GraphicsBoard:
                  [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
                  [16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28]],
         'in_play': [28, 22, 16, 22],
-        'trump':
-        1,
-        'bid_window':
-        54,
+        'trump': 1,
+        'bid_window': 54,
         'player_info_window': [37, 23, 10, 23],
-        'game_info_window':
-        1,
-        'score_chart':
-        1
+        'game_info_window': 1,
+        'score_chart': 1,
+        'chat_log': 30,
+        'chat_entry': 50
     }
 
     x_offsets = {
@@ -41,14 +43,13 @@ class GraphicsBoard:
                  [15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75],
                  [89, 89, 89, 89, 89, 89, 89, 89, 89, 89, 89, 89, 89]],
         'in_play': [45, 30, 45, 60],
-        'trump':
-        1,
+        'trump': 1,
         'bid_window': [15, 19, 23, 27, 31, 35, 39, 43, 47, 51, 55, 59, 63, 67],
         'player_info_window': [44, 15, 44, 73],
-        'game_info_window':
-        89,
-        'score_chart':
-        112
+        'game_info_window': 89,
+        'score_chart': 112,
+        'chat_log': 112,
+        'chat_entry': 112
     }
 
     def __init__(self):
@@ -57,6 +58,7 @@ class GraphicsBoard:
         curses.noecho()
         curses.cbreak()
         self.stdscr.keypad(True)
+        self.stdscr.nodelay(True)
         curses.curs_set(0)
         curses.start_color()
         curses.init_pair(1, curses.COLOR_RED, curses.COLOR_BLACK)
@@ -77,11 +79,17 @@ class GraphicsBoard:
         self.cols_offset = (curses.COLS - 181) // 2
         self.rows_offset = (curses.LINES - 58) // 2
 
+        # chat message state
+        self.message = ''
+        self.is_chatting = False
+        self.should_flush = True
+
     def __del__(self):
         # shut down curses
-        curses.nocbreak()
-        curses.echo()
-        curses.endwin()
+        # curses.nocbreak()
+        # curses.echo()
+        # curses.endwin()
+        return
 
     def erase_board(self):
         # all windows and panels for curses
@@ -94,6 +102,8 @@ class GraphicsBoard:
             'player_info_windows': [None for _ in range(4)],
             'game_info_window': None,
             'score_chart_window': None,
+            'chat_log_window': None,
+            'chat_entry_window': None
         }
 
         self.stdscr.erase()
@@ -107,6 +117,8 @@ class GraphicsBoard:
         players = boardstate['players']
         score_history = boardstate['score_history']
 
+        messages = boardstate['messages']
+
         self.erase_board()
 
         self.draw_hands(players, name)
@@ -115,6 +127,9 @@ class GraphicsBoard:
         self.draw_player_info(players, name, next_to_act, activity)
         self.draw_game_info(players, hand_num, activity)
         self.draw_score_chart(players, score_history)
+
+        self.draw_chat()
+        self.update_chat(messages)
 
     def draw_hands(self, players, name):
         for player in players.values():
@@ -200,7 +215,7 @@ class GraphicsBoard:
                 continue
 
             bid_window.addstr('\n ' + f'{i}')
-            if i == self.bid_position:
+            if i == self.bid_position and not self.is_chatting:
                 bid_window.attron(curses.A_REVERSE)
             bid_window.box()
             bid_window.refresh()
@@ -339,23 +354,33 @@ class GraphicsBoard:
         bids = [player['bid'] for player in players.values()]
         bid_total = sum(filter(None, bids))
 
-        # start with left-most bid selected
-        self.bid_position = 0
-        self.navigate_bids(0, hand_num, players[name]['dealer'], bid_total)
+        if self.should_flush:
+            curses.flushinp()
+            self.should_flush = False
+
+            # start with left-most bid selected
+            self.bid_position = 0
+            self.navigate_bids(0, hand_num, players[name]['dealer'], bid_total)
 
         # wait for user to bid
-        while True:
+        self.draw_bids(hand_num, players[name]['dealer'], bid_total)
+        inp = self.stdscr.getch()
+        if inp in [curses.KEY_ENTER, ord('\n')]:
+            self.should_flush = True
+            return self.bid_position
+        elif inp == curses.KEY_LEFT:
+            self.navigate_bids(-1, hand_num, players[name]['dealer'],
+                               bid_total)
+        elif inp == curses.KEY_RIGHT:
+            self.navigate_bids(1, hand_num, players[name]['dealer'],
+                               bid_total)
+        elif inp == ord('\t'):
+            self.is_chatting = True
             self.draw_bids(hand_num, players[name]['dealer'], bid_total)
-            curses.flushinp()
-            inp = self.stdscr.getch()
-            if inp in [curses.KEY_ENTER, ord('\n')]:
-                return self.bid_position
-            elif inp == curses.KEY_LEFT:
-                self.navigate_bids(-1, hand_num, players[name]['dealer'],
-                                   bid_total)
-            elif inp == curses.KEY_RIGHT:
-                self.navigate_bids(1, hand_num, players[name]['dealer'],
-                                   bid_total)
+            chat_result = self.type_chat()
+            if chat_result:
+                return chat_result
+        return None
 
     def navigate_bids(self, n, hand_num, dealer, bid_total):
         possible_bid_count = hand_num + 1
@@ -388,6 +413,13 @@ class GraphicsBoard:
                 self.navigate_hand(-1, hand, len(hand), led_card)
             elif inp == curses.KEY_RIGHT:
                 self.navigate_hand(1, hand, len(hand), led_card)
+            elif inp == ord('\t'):
+                self.is_chatting = True
+                self.navigate_hand(0, hand, len(hand), led_card)
+                chat_result = self.type_chat()
+                if chat_result:
+                    return chat_result
+                self.navigate_hand(0, hand, len(hand), led_card)
 
     def navigate_hand(self, n, hand, hand_len, led_card):
         # put down previously selected card
@@ -407,13 +439,83 @@ class GraphicsBoard:
                 self.hand_position = (self.hand_position + n) % hand_len
 
         # pick up currently selected card
-        self.windows['hand_windows'][0][self.hand_position].mvwin(
-            self.y_offsets['hand'][0][self.hand_position] - 2 +
-            self.rows_offset,
-            self.x_offsets['hand'][0][self.hand_position] + self.cols_offset)
+        if not self.is_chatting:
+            self.windows['hand_windows'][0][self.hand_position].mvwin(
+                self.y_offsets['hand'][0][self.hand_position] - 2 +
+                self.rows_offset,
+                self.x_offsets['hand'][0][self.hand_position] + self.cols_offset)
 
         # redraw the entire hand
         self.redraw_hand(hand)
+
+    def draw_chat(self):
+        self.windows['chat_log_window'] = curses.newwin(
+            self.sizes['chat_log_height'], self.sizes['chat_log_width'],
+            self.y_offsets['chat_log'] + self.rows_offset,
+            self.x_offsets['chat_log'] + self.cols_offset)
+        self.windows['chat_entry_window'] = curses.newwin(
+            self.sizes['chat_entry_height'], self.sizes['chat_entry_width'],
+            self.y_offsets['chat_entry'] + self.rows_offset,
+            self.x_offsets['chat_entry'] + self.cols_offset)
+
+        chat_log_window = self.windows['chat_log_window']
+        chat_entry_window = self.windows['chat_entry_window']
+
+        chat_log_window.box()
+        chat_entry_window.box()
+
+        chat_log_window.refresh()
+        chat_entry_window.refresh()
+
+    def update_chat(self, messages):
+        chat_log_window = self.windows['chat_log_window']
+        chat_log_window.erase()
+        message_count = 0
+        for message in messages:
+            chat_log_window.addstr(1 + message_count, 1,
+                                   f"{message[0]}: {message[1]}")
+            message_count += 1
+        chat_log_window.box()
+        chat_log_window.refresh()
+
+    def update_chat_entry(self):
+        chat_entry_window = self.windows['chat_entry_window']
+        chat_entry_window.erase()
+        chat_entry_window.addstr(1, 1, self.message)
+        if self.is_chatting:
+            chat_entry_window.attron(curses.A_REVERSE)
+        chat_entry_window.box()
+        chat_entry_window.attroff(curses.A_REVERSE)
+        chat_entry_window.refresh()
+
+    def type_chat(self):
+        # wait for user enter message
+        curses.flushinp()
+        while True:
+            self.update_chat_entry()
+            inp = self.stdscr.getch()
+            if inp in [curses.KEY_ENTER, ord('\n')]:
+                message = self.message
+                self.message = ''
+                self.is_chatting = False
+                self.update_chat_entry()
+                return message
+            elif inp == ord('\t'):
+                self.is_chatting = False
+                self.update_chat_entry()
+                return False
+            elif inp in [curses.KEY_BACKSPACE, ord('\b'), 127]:
+                self.message = self.message[:-1]
+            elif inp == -1:
+                continue
+            elif len(self.message) < (self.sizes['chat_entry_width'] - 2):
+                self.message += chr(inp)
+
+    def chat_check(self):
+        inp = self.stdscr.getch()
+        if inp == ord('\t'):
+            self.is_chatting = True
+            return self.type_chat()
 
     def redraw_hand(self, hand):
         for c in range(len(hand)):

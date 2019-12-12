@@ -83,12 +83,28 @@ class Client(ConnectionListener):
 
         # player must be actor, should either bid or play
         if b['activity'] == 'bid':
-            bid = self.gb.get_bid(b, self.name)
-            connection.Send({'action': 'bid', 'bid': bid})
+            inp = None
+            while 1:
+                inp = self.gb.get_bid(b, self.name)
+                if isinstance(inp, str):
+                    connection.Send({'action': 'message', 'message': inp})
+                elif isinstance(inp, int):
+                    connection.Send({'action': 'bid', 'bid': inp})
+                    break
+                connection.Pump()
+                self.Pump()
+                sleep(0.001)
         elif b['activity'] == 'play':
-            play_index = self.gb.get_play(b, self.name)
-            played_card = b['players'][self.name]['cards_in_hand'][play_index]
-            connection.Send({'action': 'play', 'card': played_card.to_array()})
+            inp = self.gb.get_play(b, self.name)
+            if isinstance(inp, str):
+                connection.Send({'action': 'message', 'message': inp})
+            elif isinstance(inp, int):
+                played_card = b['players'][self.name]['cards_in_hand'][inp]
+                connection.Send({'action': 'play', 'card': played_card.to_array()})
+
+    def Network_message(self, data):
+        messages = data['messages']
+        self.gb.update_chat(messages)
 
     def Network_end_game(self, data):
         self.gb.end_game(data['boardstate'], self.name, data['winner'])
@@ -109,4 +125,8 @@ if __name__ == "__main__":
                    sort_hand_ascending=(len(sys.argv) == 4))
         while 1:
             c.Loop()
+            if c.gb:
+                inp = c.gb.chat_check()
+                if inp:
+                    connection.Send({'action': 'message', 'message': inp})
             sleep(0.001)
