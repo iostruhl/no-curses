@@ -313,6 +313,8 @@ class OHServer(Server):
 
     def handle_message(self, name: str, message: str):
         self.boardstate['messages'].append([name, message])
+        if len(self.boardstate['messages']) > 18:
+            self.boardstate['messages'] = self.boardstate['messages'][1:]
         self.send_all({
             'action': 'message',
             'messages': self.boardstate['messages']
