@@ -313,14 +313,13 @@ class OHServer(Server):
 
     def handle_message(self, name: str, message: str):
         self.boardstate['messages'].append([name, message])
-        if len(self.boardstate['messages']) > 18:
+        if len(self.boardstate['messages']) > 19:
             self.boardstate['messages'] = self.boardstate['messages'][1:]
         self.send_all({
             'action': 'message',
             'messages': self.boardstate['messages'],
             'players': self.boardstate['players']
         })
-        self.waiting_for_user = False
 
     def handle_replay(self):
         self.waiting_for_user = False

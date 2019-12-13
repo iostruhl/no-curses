@@ -15,7 +15,7 @@ class GraphicsBoard:
         'game_info_window_width': 20,
         'score_chart_height': 29,
         'score_chart_width': 68,
-        'chat_log_height': 20,
+        'chat_log_height': 21,
         'chat_log_width': 68,
         'chat_entry_height': 3,
         'chat_entry_width': 68,
@@ -375,8 +375,6 @@ class GraphicsBoard:
             elif player_id == 3:
                 chat_log_window.addstr(1 + message_count, 1, f"{name}",
                                        curses.color_pair(6))
-            # chat_log_window.addstr(1 + message_count, 1 + len(name), ":")
-            # chat_log_window.addstr(1 + message_count, 1 + 12, f"{text}")
             chat_log_window.addstr(1 + message_count, 1 + len(name), f": {text}")
             message_count += 1
         chat_log_window.box()
@@ -434,7 +432,7 @@ class GraphicsBoard:
                     self.navigate_hand(0, hand, len(hand), led_card)
             elif key == 127:
                 self.message = self.message[:-1]
-            elif len(self.message) < (self.sizes['chat_entry_width'] - len(self.name) - 2):
+            elif len(self.message) < (self.sizes['chat_entry_width'] - 11 - 2):
                 self.message += chr(key)
             self.update_chat_entry()
 
