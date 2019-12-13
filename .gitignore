@@ -105,3 +105,6 @@ venv.bak/
 
 # vim
 *.swp
+
+# Mac OS
+.DS_Store

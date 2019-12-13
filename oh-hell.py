@@ -83,12 +83,14 @@ class Client(ConnectionListener):
 
         # player must be actor, should either bid or play
         if b['activity'] == 'bid':
-            bid = self.gb.get_bid(b, self.name)
-            connection.Send({'action': 'bid', 'bid': bid})
+            self.gb.bid()
         elif b['activity'] == 'play':
-            play_index = self.gb.get_play(b, self.name)
-            played_card = b['players'][self.name]['cards_in_hand'][play_index]
-            connection.Send({'action': 'play', 'card': played_card.to_array()})
+            self.gb.play()
+
+    def Network_message(self, data):
+        messages = data['messages']
+        players = data['players']
+        self.gb.update_chat_log(messages, players)
 
     def Network_end_game(self, data):
         self.gb.end_game(data['boardstate'], self.name, data['winner'])
@@ -107,6 +109,9 @@ if __name__ == "__main__":
                    int(port),
                    name=sys.argv[2],
                    sort_hand_ascending=(len(sys.argv) == 4))
+
         while 1:
             c.Loop()
+            if c.gb:
+                c.gb.get_input(connection)
             sleep(0.001)

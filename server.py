@@ -54,6 +54,14 @@ class ClientChannel(Channel):
         print("Client", self.name, "sent", data)
         self._server.handle_play_card(self.name, data['card'])
 
+    def Network_message(self, data):
+        print("Client", self.name, "sent", data)
+        self._server.handle_message(self.name, data['message'])
+
+    def Network_replay(self, data):
+        print("Client", self.name, "sent", data)
+        self._server.handle_replay()
+
 
 class OHServer(Server):
     channelClass = ClientChannel
@@ -82,7 +90,8 @@ class OHServer(Server):
             'trump_card': None,
             'led_card': None,
             'players': dict(),
-            'score_history': {}
+            'score_history': {},
+            'messages': list()
         }
 
         print("Server launched")
@@ -144,10 +153,11 @@ class OHServer(Server):
             }
 
     def display_name(self, name):
-        if name.split(' ')[0].lower() == "alex":
-            if name.split(' ')[1].lower() == "mariona":
-                return get_mariona_name()
-            return name.split(' ')[1]
+        if not self.untracked:
+            if name.split(' ')[0].lower() == "alex":
+                if name.split(' ')[1].lower() == "mariona":
+                    return get_mariona_name()
+                return name.split(' ')[1]
         return name.split(' ')[0]
 
     def Launch(self):
@@ -301,6 +311,20 @@ class OHServer(Server):
         self.boardstate['players'][name]['cards_in_hand'].remove(card)
         self.waiting_for_user = False
 
+    def handle_message(self, name: str, message: str):
+        self.boardstate['messages'].append([name, message])
+        if len(self.boardstate['messages']) > 18:
+            self.boardstate['messages'] = self.boardstate['messages'][1:]
+        self.send_all({
+            'action': 'message',
+            'messages': self.boardstate['messages'],
+            'players': self.boardstate['players']
+        })
+        self.waiting_for_user = False
+
+    def handle_replay(self):
+        self.waiting_for_user = False
+
     def finish_trick(self):
         winner_name = max(
             self.boardstate['players'],
@@ -367,7 +391,8 @@ class OHServer(Server):
             get_mariona_name()
 
         # Log hand.
-        sheets_logging.log_hand(raw_hand_data)
+        if not self.untracked:
+            sheets_logging.log_hand(raw_hand_data)
 
     def maybe_finish_game(self):
         if self.boardstate['hand_num'] <= 13:
