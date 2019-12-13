@@ -442,8 +442,6 @@ class GraphicsBoard:
             if key == ord('\t'):
                 self.is_chatting = True
                 self.update_chat_entry()
-            elif key == ord('q'):
-                exit()
 
         elif self.mode == 'BID':
             hand_num = self.boardstate['hand_num']
