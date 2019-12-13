@@ -317,7 +317,8 @@ class OHServer(Server):
             self.boardstate['messages'] = self.boardstate['messages'][1:]
         self.send_all({
             'action': 'message',
-            'messages': self.boardstate['messages']
+            'messages': self.boardstate['messages'],
+            'players': self.boardstate['players']
         })
         self.waiting_for_user = False
 

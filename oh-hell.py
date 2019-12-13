@@ -89,7 +89,8 @@ class Client(ConnectionListener):
 
     def Network_message(self, data):
         messages = data['messages']
-        self.gb.update_chat_log(messages)
+        players = data['players']
+        self.gb.update_chat_log(messages, players)
 
     def Network_end_game(self, data):
         self.gb.end_game(data['boardstate'], self.name, data['winner'])

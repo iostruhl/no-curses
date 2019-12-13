@@ -130,7 +130,7 @@ class GraphicsBoard:
         self.draw_player_info(players, name, next_to_act, activity)
         self.draw_game_info(players, hand_num, activity)
         self.draw_score_chart(players, score_history)
-        self.draw_chat(messages)
+        self.draw_chat(messages, players)
 
     def draw_hands(self, players, name):
         for player in players.values():
@@ -341,7 +341,7 @@ class GraphicsBoard:
 
         score_chart_window.refresh()
 
-    def draw_chat(self, messages):
+    def draw_chat(self, messages, players):
         self.windows['chat_log_window'] = curses.newwin(
             self.sizes['chat_log_height'], self.sizes['chat_log_width'],
             self.y_offsets['chat_log'] + self.rows_offset,
@@ -351,16 +351,33 @@ class GraphicsBoard:
             self.y_offsets['chat_entry'] + self.rows_offset,
             self.x_offsets['chat_entry'] + self.cols_offset)
 
-        self.update_chat_log(messages)
+        self.update_chat_log(messages, players)
         self.update_chat_entry()
 
-    def update_chat_log(self, messages):
+    def update_chat_log(self, messages, players):
         chat_log_window = self.windows['chat_log_window']
         chat_log_window.erase()
         message_count = 0
         for message in messages:
-            chat_log_window.addstr(1 + message_count, 1,
-                                   f"{message[0]}: {message[1]}")
+            name = players[message[0]]['display_name']
+            text = message[1]
+            player_id = players[message[0]]['id']
+
+            if player_id == 0:
+                chat_log_window.addstr(1 + message_count, 1, f"{name}",
+                                       curses.color_pair(1))
+            elif player_id == 1:
+                chat_log_window.addstr(1 + message_count, 1, f"{name}",
+                                       curses.color_pair(2))
+            elif player_id == 2:
+                chat_log_window.addstr(1 + message_count, 1, f"{name}",
+                                       curses.color_pair(5))
+            elif player_id == 3:
+                chat_log_window.addstr(1 + message_count, 1, f"{name}",
+                                       curses.color_pair(6))
+            # chat_log_window.addstr(1 + message_count, 1 + len(name), ":")
+            # chat_log_window.addstr(1 + message_count, 1 + 12, f"{text}")
+            chat_log_window.addstr(1 + message_count, 1 + len(name), f": {text}")
             message_count += 1
         chat_log_window.box()
         chat_log_window.refresh()
@@ -386,7 +403,7 @@ class GraphicsBoard:
         # Draw ending screen.
         self.draw_player_info(players, name, None, None, winner)
         self.draw_score_chart(players, score_history)
-        self.draw_chat(messages)
+        self.draw_chat(messages, players)
 
         self.mode = 'END'
 
