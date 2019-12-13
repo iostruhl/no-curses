@@ -432,7 +432,7 @@ class GraphicsBoard:
                     self.navigate_hand(0, hand, len(hand), led_card)
             elif key == 127:
                 self.message = self.message[:-1]
-            elif len(self.message) < (self.sizes['chat_entry_width'] - 11 - 2):
+            elif len(self.message) < (self.sizes['chat_entry_width'] - 11 - 2 - 2):
                 self.message += chr(key)
             self.update_chat_entry()
 
