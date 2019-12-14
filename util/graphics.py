@@ -1,6 +1,7 @@
 import curses
 from curses import panel
 from .card import Card
+from os import system
 
 
 class GraphicsBoard:
@@ -471,8 +472,7 @@ class GraphicsBoard:
                 self.navigate_hand(1, hand, len(hand), led_card)
             elif key == ord('\n'):
                 played_card = hand[self.hand_position].to_array()
-                # TODO HOW WOULD YOU LIKE TO DIE TODAY MOTHERFUCKER
-                # self.maybe_die_motherfucker(played_card, self.boardstate['trump_card'])
+                self.maybe_die_motherfucker(played_card, self.boardstate['trump_card'])
                 connection.Send({'action': 'play', 'card': played_card})
                 self.mode = 'IDLE'
             elif key == ord('\t'):
@@ -553,3 +553,10 @@ class GraphicsBoard:
         # determine the seating of a player relative to player whose screen
         # is being drawn, who is always at the bottom of the screen
         return (target_id - relative_to_id) % 4
+
+    # If the card is the ace of spaces, die (motherfucker).
+    def maybe_die_motherfucker(self, played_card, trump_card):
+        if played_card[0] == "A" and played_card[1] == trump_card.suit:
+            system("osascript -e \"Set Volume 7\"")
+            system("afplay util/how.mp3")
+            system("osascript -e \"Set Volume 0\"")
