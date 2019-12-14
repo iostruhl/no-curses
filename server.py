@@ -106,7 +106,7 @@ class OHServer(Server):
             self.ready_count -= 1
             print("Removing player:", channel.name)
             self.user_channels.remove(channel)
-            if not self.initialize_new_game:
+            if not self.initialize_new_game and self.boardstate['hand_num'] <= 13:
                 print("Pausing game.")
                 self.paused = True
                 self.send_all({
@@ -411,9 +411,11 @@ class OHServer(Server):
         if not self.untracked:
             sheets_logging.log_game(dict(scores))
 
+        self.waiting_for_user = True
+
         # Press any key to exit
-        input()
-        exit()
+        # input()
+        # exit()
 
     def hide_non_player_hands(self, name):
         clean_boardstate = deepcopy(self.boardstate)
