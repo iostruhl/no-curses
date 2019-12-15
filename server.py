@@ -135,10 +135,11 @@ class OHServer(Server):
 
     def handle_name(self, name, reverse_sort):
         self.send_one(name, {'action': "server_name", 'name': name})
-        self.send_all({
-            'action': "names",
-            'names': [channel.name for channel in self.user_channels]
-        })
+        if self.boardstate['hand_num'] <= 13:
+            self.send_all({
+                'action': "names",
+                'names': [channel.name for channel in self.user_channels]
+            })
         if name not in self.boardstate['players']:
             self.boardstate['players'][name] = {
                 'display_name': self.display_name(name),
@@ -168,7 +169,7 @@ class OHServer(Server):
     # --- Game Logic ---
     def handle_ready(self):
         self.ready_count += 1
-        if self.ready_count == 4:
+        if self.ready_count == 4 and self.boardstate['hand_num'] <= 13:
             self.start_or_resume_game()
 
     def start_or_resume_game(self):
