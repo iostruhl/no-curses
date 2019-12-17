@@ -556,8 +556,11 @@ class GraphicsBoard:
 
     # If the card is the ace of spaces, die (motherfucker).
     def maybe_die_motherfucker(self, played_card, trump_card):
-        if played_card[0] == "A" and played_card[1] == trump_card.suit:
-            system("current_vol=$(osascript -e 'output volume of (get volume settings)')")
-            system("osascript -e 'set volume 7'")
-            system("afplay util/how.mp3")
-            system("osascript -e 'set volume output volume $current_vol'")
+        try:
+            if played_card[0] == "A" and played_card[1] == trump_card.suit:
+                system("current_vol=$(osascript -e 'output volume of (get volume settings)')")
+                system("osascript -e 'set volume 7'")
+                system("afplay util/how.mp3")
+                system("osascript -e 'set volume output volume $current_vol'")
+        except:
+            pass
