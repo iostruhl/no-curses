@@ -472,7 +472,7 @@ class GraphicsBoard:
                 self.navigate_hand(1, hand, len(hand), led_card)
             elif key == ord('\n'):
                 played_card = hand[self.hand_position].to_array()
-                self.maybe_die_motherfucker(played_card, self.boardstate['trump_card'])
+                # self.maybe_die_motherfucker(played_card, self.boardstate['trump_card'])
                 connection.Send({'action': 'play', 'card': played_card})
                 self.mode = 'IDLE'
             elif key == ord('\t'):

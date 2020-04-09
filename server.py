@@ -5,7 +5,7 @@ from util import sheets_logging
 from time import sleep
 from random import shuffle
 import util.card as card
-from util.mariona_names import get_mariona_name
+from util.mariona_names import get_mariona_name, get_jowen_name
 from copy import deepcopy
 import sys
 
@@ -155,10 +155,16 @@ class OHServer(Server):
 
     def display_name(self, name):
         if not self.untracked:
+            # Joey or Owen
+            if name.split(' ')[0].lower() == "joey" or name.split(' ')[0].lower() == "owen":
+                return get_jowen_name()
             if name.split(' ')[0].lower() == "alex":
+                # Alex Mariona
                 if name.split(' ')[1].lower() == "mariona":
                     return get_mariona_name()
+                # Alex Wulff
                 return name.split(' ')[1]
+        # Ben or Isaac, or if untracked default to first name.
         return name.split(' ')[0]
 
     def Launch(self):
@@ -385,10 +391,8 @@ class OHServer(Server):
         self.boardstate['trump_card'] = None
         self.should_deal_hand = True
 
-        # Change Mariona's name, if Mariona is playing.
-        if 'Alex Mariona' in self.boardstate['players']:
-            self.boardstate['players']['Alex Mariona']['display_name'] = \
-            get_mariona_name()
+        # Update all display names.
+        self.update_display_names()
 
         # Log hand.
         if not self.untracked:
@@ -429,6 +433,9 @@ class OHServer(Server):
                 ]
         return clean_boardstate
 
+    def update_display_names(self):
+        for name in self.boardstate['players']:
+            self.boardstate['players'][name]['display_name'] = self.display_name(name)
 
 # Run the server
 if __name__ == "__main__":
