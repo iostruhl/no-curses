@@ -5,6 +5,7 @@ from util.card import Card
 from util.graphics import GraphicsBoard
 import shutil
 from PodSixNet.Connection import connection, ConnectionListener
+from os import system
 
 
 class Client(ConnectionListener):
@@ -81,7 +82,13 @@ class Client(ConnectionListener):
             # player is not the actor; just update screen
             return
 
-        # player must be actor, should either bid or play
+        # Player is the actor.
+        # Bring terminal to foreground.
+        try:
+            system("osascript -e 'tell application \"Terminal\" to activate'")
+        except:
+            pass
+        # Bid or play based on context.
         if b['activity'] == 'bid':
             self.gb.bid()
         elif b['activity'] == 'play':
