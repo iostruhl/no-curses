@@ -22,7 +22,11 @@ mariona_names = [
     'Mamoncillo', 'Meshuggeneh', 'Midsemester', 'Malocchio', 'Manichaean',
     'Malthusian', 'Manzanilla', 'Mexicali', 'Miscitation', 'Montevideo',
     'Miscellany', 'Majordomo', 'Misestimate', 'Marathoner', 'Mugwumpery',
-    'Mitigator', 'Moneymonger', 'Methuselah', 'Machismo', 'Mogadishu'
+    'Mitigator', 'Moneymonger', 'Methuselah', 'Machismo', 'Mogadishu',
+    'Muscle Milk', 'Mowgli', 'Mogul', 'Mammogram', 'Marmaduke',
+    'Melissandra', 'Marc Antony', 'Manishowitz', 'Matza Ball',
+    'Negotiator', 'Manbun', 'Marblehead', 'Madonna', 'Macklemore',
+    'Melatonin', 'Malpractice', 'Marmalade'
 ]
 
 def get_mariona_name():

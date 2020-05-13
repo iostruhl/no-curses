@@ -448,13 +448,13 @@ class GraphicsBoard:
             bids = [player['bid'] for player in players.values()]
             bid_total = sum(filter(None, bids))
 
-            if key == curses.KEY_LEFT:
+            if key == curses.KEY_LEFT or key == ord('j'):
                 self.navigate_bids(-1, hand_num, players[self.name]['dealer'], bid_total)
                 self.draw_bids(hand_num, players[self.name]['dealer'], bid_total)
-            elif key == curses.KEY_RIGHT:
+            elif key == curses.KEY_RIGHT or key == ord('k'):
                 self.navigate_bids(1, hand_num, players[self.name]['dealer'], bid_total)
                 self.draw_bids(hand_num, players[self.name]['dealer'], bid_total)
-            elif key == ord('\n'):
+            elif key == ord('\n') or key == ord('f'):
                 connection.Send({'action': 'bid', 'bid': self.bid_position})
                 self.mode = 'IDLE'
             elif key == ord('\t'):
@@ -466,11 +466,11 @@ class GraphicsBoard:
             led_card = self.boardstate['led_card']
             hand = self.boardstate['players'][self.name]['cards_in_hand']
 
-            if key == curses.KEY_LEFT:
+            if key == curses.KEY_LEFT or key == ord('j'):
                 self.navigate_hand(-1, hand, len(hand), led_card)
-            elif key == curses.KEY_RIGHT:
+            elif key == curses.KEY_RIGHT or key == ord('k'):
                 self.navigate_hand(1, hand, len(hand), led_card)
-            elif key == ord('\n'):
+            elif key == ord('\n') or key == ord('f'):
                 played_card = hand[self.hand_position].to_array()
                 # self.maybe_die_motherfucker(played_card, self.boardstate['trump_card'])
                 connection.Send({'action': 'play', 'card': played_card})
@@ -553,14 +553,3 @@ class GraphicsBoard:
         # determine the seating of a player relative to player whose screen
         # is being drawn, who is always at the bottom of the screen
         return (target_id - relative_to_id) % 4
-
-    # If the card is the ace of spaces, die (motherfucker).
-    def maybe_die_motherfucker(self, played_card, trump_card):
-        try:
-            if played_card[0] == "A" and played_card[1] == trump_card.suit:
-                system("current_vol=$(osascript -e 'output volume of (get volume settings)')")
-                system("osascript -e 'set volume 7'")
-                system("afplay util/how.mp3")
-                system("osascript -e 'set volume output volume $current_vol'")
-        except:
-            pass
