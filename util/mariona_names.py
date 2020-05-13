@@ -24,9 +24,9 @@ mariona_names = [
     'Miscellany', 'Majordomo', 'Misestimate', 'Marathoner', 'Mugwumpery',
     'Mitigator', 'Moneymonger', 'Methuselah', 'Machismo', 'Mogadishu',
     'Muscle Milk', 'Mowgli', 'Mogul', 'Mammogram', 'Marmaduke',
-    'Melissandra', 'Marc Antony', 'Manishowitz', 'Matza Ball',
+    'Melissandra', 'Marc Antony', 'Manishewitz', 'Matza Ball',
     'Negotiator', 'Manbun', 'Marblehead', 'Madonna', 'Macklemore',
-    'Melatonin', 'Malpractice', 'Marmalade'
+    'Melatonin', 'Malpractice', 'Marmalade', "MARIOVID-19"
 ]
 
 def get_mariona_name():
