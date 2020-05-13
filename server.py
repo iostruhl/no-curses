@@ -5,7 +5,7 @@ from util import sheets_logging
 from time import sleep
 from random import shuffle
 import util.card as card
-from util.mariona_names import get_mariona_name, get_jowen_name
+from util.mariona_names import get_mariona_name
 from copy import deepcopy
 import sys
 
@@ -155,16 +155,12 @@ class OHServer(Server):
 
     def display_name(self, name):
         if not self.untracked:
-            # Joey or Owen
-            if name.split(' ')[0].lower() == "joey" or name.split(' ')[0].lower() == "owen":
-                return get_jowen_name()
             if name.split(' ')[0].lower() == "alex":
                 # Alex Mariona
                 if name.split(' ')[1].lower() == "mariona":
                     return get_mariona_name()
                 # Alex Wulff
                 return name.split(' ')[1]
-        # Ben or Isaac, or if untracked default to first name.
         return name.split(' ')[0]
 
     def Launch(self):

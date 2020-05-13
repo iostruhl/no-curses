@@ -25,11 +25,5 @@ mariona_names = [
     'Mitigator', 'Moneymonger', 'Methuselah', 'Machismo', 'Mogadishu'
 ]
 
-
-jowen_names = ["Owen", "Joey"]
-
 def get_mariona_name():
     return random.choice(mariona_names)
-
-def get_jowen_name():
-    return random.choice(jowen_names)
