@@ -86,7 +86,6 @@ class Client(ConnectionListener):
         # Bring terminal to foreground.
         try:
             system("osascript -e 'tell application \"Terminal\" to activate'")
-            sleep(1)
         except:
             pass
         # Bid or play based on context.
