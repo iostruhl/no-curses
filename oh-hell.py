@@ -85,7 +85,7 @@ class Client(ConnectionListener):
         # Player is the actor.
         # Bring terminal to foreground.
         try:
-            system("osascript -e 'tell application \"Terminal\" to activate'")
+            system("osascript -e 'display notification \"Oh Hell\" with title \"Your turn\"'")
         except:
             pass
         # Bid or play based on context.
