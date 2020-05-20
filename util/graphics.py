@@ -281,23 +281,25 @@ class GraphicsBoard:
         bids = list(player['bid'] for player in players.values())
         bid_total = sum(filter(None, bids))
         if activity == 'bid':
+            self.set_fucktime(False)
             game_info_window.addstr('\n ' + f'HAND: {hand_num}' + '\n')
             game_info_window.addstr(' ' + f'Bids Taken: {bid_total}' + '\n')
             game_info_window.addstr(' ' +
                                     f'Bids Remaining: {hand_num - bid_total}' +
                                     '\n')
         else:
+            self.set_fucktime(abs(bid_total - hand_num) >= 2)
             if bid_total > hand_num:
                 game_info_window.attron(curses.color_pair(2))
                 game_info_window.addstr('\n ' + f'HAND: {hand_num}' + '\n')
                 game_info_window.addstr('\n ' +
-                                        f'OVERBID (+{bid_total - hand_num})' +
+                                        f'{"OVERBID" if abs(bid_total - hand_num) < 2 else "FUCKTIME"} (+{bid_total - hand_num})' +
                                         '\n')
             else:
                 game_info_window.attron(curses.color_pair(1))
                 game_info_window.addstr('\n ' + f'HAND: {hand_num}' + '\n')
                 game_info_window.addstr('\n ' +
-                                        f'UNDERBID ({bid_total - hand_num})' +
+                                        f'{"UNDERBID" if abs(bid_total - hand_num) < 2 else "FUCKTIME"} ({bid_total - hand_num})' +
                                         '\n')
         game_info_window.box()
         game_info_window.refresh()
@@ -553,3 +555,17 @@ class GraphicsBoard:
         # determine the seating of a player relative to player whose screen
         # is being drawn, who is always at the bottom of the screen
         return (target_id - relative_to_id) % 4
+
+    def set_fucktime(self, fucktime):
+        if fucktime:
+            curses.init_pair(1, curses.COLOR_BLACK, curses.COLOR_RED)
+            curses.init_pair(2, curses.COLOR_BLACK, curses.COLOR_GREEN)
+            curses.init_pair(4, curses.COLOR_BLACK, curses.COLOR_BLUE)
+            curses.init_pair(5, curses.COLOR_BLACK, curses.COLOR_CYAN)
+            curses.init_pair(6, curses.COLOR_BLACK, curses.COLOR_YELLOW)
+        else:
+            curses.init_pair(1, curses.COLOR_RED, curses.COLOR_BLACK)
+            curses.init_pair(2, curses.COLOR_GREEN, curses.COLOR_BLACK)
+            curses.init_pair(4, curses.COLOR_BLUE, curses.COLOR_BLACK)
+            curses.init_pair(5, curses.COLOR_CYAN, curses.COLOR_BLACK)
+            curses.init_pair(6, curses.COLOR_YELLOW, curses.COLOR_BLACK)
