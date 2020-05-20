@@ -5,8 +5,7 @@ from util.card import Card
 from util.graphics import GraphicsBoard
 import shutil
 from PodSixNet.Connection import connection, ConnectionListener
-from os import system
-
+import os
 
 class Client(ConnectionListener):
     def __init__(self, host, port, name="ANON", sort_hand_ascending=False):
@@ -85,9 +84,10 @@ class Client(ConnectionListener):
         # Player is the actor.
         # Bring terminal to foreground.
         try:
-            system("osascript -e 'display notification \"Oh Hell\" with title \"Your turn\"'")
-        except:
-            pass
+            os.system(f"osascript {os.path.join(os.path.dirname(__file__), 'util/activate_window.scpt')}")
+        except Exception as e:
+            print(e)
+
         # Bid or play based on context.
         if b['activity'] == 'bid':
             self.gb.bid()
