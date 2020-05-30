@@ -161,6 +161,8 @@ class OHServer(Server):
                     return get_mariona_name()
                 # Alex Wulff
                 return name.split(' ')[1]
+            if name.split(' ')[0].lower() == "owen":
+                return "Amy"
         return name.split(' ')[0]
 
     def Launch(self):
