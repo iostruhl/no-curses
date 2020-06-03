@@ -87,8 +87,6 @@ class GraphicsBoard:
         self.name = None
         self.boardstate = None
 
-        self.enable_fucktime = True
-
     def __del__(self):
         # shut down curses
         curses.nocbreak()
@@ -290,25 +288,19 @@ class GraphicsBoard:
                                     f'Bids Remaining: {hand_num - bid_total}' +
                                     '\n')
         else:
-            if self.enable_fucktime:
-                self.set_fucktime(abs(bid_total - hand_num) >= 2)
-            state_string = ""
-            state_color = None
+            self.set_fucktime(abs(bid_total - hand_num) >= 2)
             if bid_total > hand_num:
-                state_string = "OVERBID"
-                state_color = curses.color_pair(2)
+                game_info_window.attron(curses.color_pair(2))
+                game_info_window.addstr('\n ' + f'HAND: {hand_num}' + '\n')
+                game_info_window.addstr('\n ' +
+                                        f'{"OVERBID" if abs(bid_total - hand_num) < 2 else "FUCKTIME"} (+{bid_total - hand_num})' +
+                                        '\n')
             else:
-                state_string = "UNDERBID"
-                state_color = curses.color_pair(1)
-
-            if abs(bid_total - hand_num) >= 2 and self.enable_fucktime:
-                state_string = "FUCKTIME"
-
-            game_info_window.attron(state_color)
-            game_info_window.addstr('\n ' + f'HAND: {hand_num}' + '\n')
-            game_info_window.addstr('\n ' +
-                                    f'{state_string} ({"+" if bid_total > hand_num else ""}{bid_total - hand_num})' +
-                                    '\n')
+                game_info_window.attron(curses.color_pair(1))
+                game_info_window.addstr('\n ' + f'HAND: {hand_num}' + '\n')
+                game_info_window.addstr('\n ' +
+                                        f'{"UNDERBID" if abs(bid_total - hand_num) < 2 else "FUCKTIME"} ({bid_total - hand_num})' +
+                                        '\n')
         game_info_window.box()
         game_info_window.refresh()
 
